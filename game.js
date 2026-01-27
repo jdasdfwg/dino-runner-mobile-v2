@@ -66,14 +66,15 @@ const player = {
     },
     
     update() {
-        // Handle umbrella - can only use when not jumping
-        if (keys.umbrella && !this.isJumping) {
+        // Handle umbrella - can be used anytime (including mid-air)
+        if (keys.umbrella) {
             this.isUmbrellaActive = true;
         } else {
             this.isUmbrellaActive = false;
         }
         
-        // Handle jump - can only jump when not using umbrella and on ground
+        // Handle jump - can only START a jump when on ground and not using umbrella
+        // (once in the air, umbrella can be activated)
         if (keys.jump && !this.isJumping && !this.isUmbrellaActive) {
             this.velocityY = JUMP_FORCE;
             this.isJumping = true;
