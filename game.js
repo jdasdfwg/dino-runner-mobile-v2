@@ -236,34 +236,20 @@ const asteroids = [];
 function spawnAsteroid() {
     const size = 25 + Math.random() * 15;
     
-    // Spawn from right side of screen, at varying heights
-    const spawnX = canvas.width + size;
-    const spawnY = 20 + Math.random() * 80; // Upper area, visible on screen
+    // Spawn directly above the player area - falls straight down
+    // Small random offset so not always perfectly centered
+    const spawnX = player.x + (Math.random() * 40 - 10);
+    const spawnY = -size - 20;
     
     // Difficulty progression
     const difficultyProgress = Math.min(1, frameCount / 3000);
     
-    // Target: player's x position, at body height
-    // 70% aim directly at dino, 30% slight miss (keeps it interesting)
-    const aimVariance = Math.random();
-    let targetY;
-    if (aimVariance < 0.7) {
-        // Direct hit trajectory - aims at dino body
-        targetY = GROUND_Y - 30 + (Math.random() * 20 - 10);
-    } else {
-        // Near miss - passes just above or hits ground nearby
-        targetY = GROUND_Y - 60 + Math.random() * 100;
-    }
+    // Falls straight down (no horizontal movement)
+    const speedX = 0;
     
-    // Calculate trajectory to pass through player's x position at targetY
-    const targetX = player.x + 20;
-    
-    // Speed increases with difficulty (travel time decreases)
-    // Longer travel time = more reaction time for player
-    const travelFrames = Math.max(50, 90 - difficultyProgress * 30); // 90 frames early, 50 frames late game
-    
-    const speedX = (targetX - spawnX) / travelFrames;
-    const speedY = (targetY - spawnY) / travelFrames;
+    // Fall speed - starts slow, gets faster
+    const baseFallSpeed = 3 + difficultyProgress * 2;
+    const speedY = baseFallSpeed + Math.random() * 1;
     
     // Pre-generate asteroid shape (so it doesn't flicker)
     const shapeVariance = [];
@@ -530,9 +516,11 @@ function isCactusInJumpZone() {
 
 // Check if there's already an asteroid threatening the player
 function isAsteroidAlreadyThreatening() {
-    // Check if any asteroid is currently on screen and heading toward player
+    // Check if any asteroid is falling above the player
     for (const asteroid of asteroids) {
-        if (asteroid.x > player.x && asteroid.x < canvas.width + 50) {
+        if (asteroid.x > player.x - 40 && 
+            asteroid.x < player.x + 60 && 
+            asteroid.y < GROUND_Y) {
             return true;
         }
     }
