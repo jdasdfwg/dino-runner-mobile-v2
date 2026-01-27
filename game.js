@@ -240,8 +240,12 @@ function spawnAsteroid() {
     // Add small random offset so they're not always perfectly centered
     const targetX = player.x + 5 + (Math.random() * 30 - 15);
     
-    // Calculate fall speed based on game difficulty - faster as game progresses
-    const baseFallSpeed = 4 + (gameSpeed - BASE_SPEED) * 0.4;
+    // Calculate fall speed - starts slow, speeds up over time
+    // Difficulty progress from 0 to 1 over ~50 seconds
+    const difficultyProgress = Math.min(1, frameCount / 3000);
+    
+    // Base speed: 2.5 at start, up to 5 at max difficulty
+    const baseFallSpeed = 2.5 + difficultyProgress * 2.5;
     const fallSpeed = baseFallSpeed + Math.random() * 1.5;
     
     asteroids.push({
@@ -522,15 +526,23 @@ function manageSpawns() {
         lastCactusSpawn = frameCount;
     }
     
-    // Spawn asteroids more frequently, but prevent impossible situations
+    // Spawn asteroids - starts easy, ramps up over time
     // Don't spawn asteroid if:
     // 1. There's a cactus in the jump zone (would require jumping + umbrella simultaneously)
     // 2. There's already an asteroid threatening the player
-    const minAsteroidInterval = Math.max(25, 60 - gameSpeed * 2);
-    const asteroidChance = Math.min(0.12, 0.04 + gameSpeed * 0.006);
+    
+    // Difficulty scaling based on time played (frameCount)
+    // Start very easy, ramp up gradually
+    const difficultyProgress = Math.min(1, frameCount / 3000); // Takes ~50 seconds to reach max difficulty
+    
+    // Min interval: starts at 120, goes down to 40 at max difficulty
+    const minAsteroidInterval = Math.max(40, 120 - difficultyProgress * 80);
+    
+    // Spawn chance: starts at 0.01 (1%), goes up to 0.08 (8%) at max difficulty  
+    const asteroidChance = 0.01 + difficultyProgress * 0.07;
     
     const canSpawnAsteroid = 
-        frameCount > 90 && // Short grace period at start
+        frameCount > 180 && // Longer grace period at start (~3 seconds)
         !isCactusInJumpZone() && // No cactus requiring a jump
         !isAsteroidAlreadyThreatening() && // No existing asteroid threat
         frameCount - lastAsteroidSpawn > minAsteroidInterval;
