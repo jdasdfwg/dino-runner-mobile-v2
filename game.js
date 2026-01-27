@@ -236,26 +236,29 @@ const asteroids = [];
 function spawnAsteroid() {
     const size = 25 + Math.random() * 15;
     
-    // Spawn asteroids directly above the player's center position
-    // This ensures they fall straight down onto the dino
-    // Add small random offset so they're not always perfectly centered
-    const targetX = player.x + 5 + (Math.random() * 30 - 15);
+    // Spawn asteroids from the right side, moving left toward the player
+    // Start off-screen right and above
+    const spawnX = canvas.width + size + Math.random() * 100;
+    const spawnY = -size - 10 - Math.random() * 50;
     
-    // Calculate fall speed - starts slow, speeds up over time
-    // Difficulty progress from 0 to 1 over ~50 seconds
+    // Calculate speeds - difficulty increases over time
     const difficultyProgress = Math.min(1, frameCount / 3000);
     
-    // Base speed: 2.5 at start, up to 5 at max difficulty
-    const baseFallSpeed = 2.5 + difficultyProgress * 2.5;
-    const fallSpeed = baseFallSpeed + Math.random() * 1.5;
+    // Horizontal speed (moving left): 4-6 at start, 6-9 at max difficulty
+    const baseSpeedX = 4 + difficultyProgress * 2;
+    const speedX = -(baseSpeedX + Math.random() * 2);
+    
+    // Vertical speed (falling down): slower than horizontal to create diagonal path
+    const baseSpeedY = 2 + difficultyProgress * 1.5;
+    const speedY = baseSpeedY + Math.random() * 1;
     
     asteroids.push({
-        x: targetX,
-        y: -size - 10,
+        x: spawnX,
+        y: spawnY,
         width: size,
         height: size,
-        speedY: fallSpeed,
-        speedX: 0, // No horizontal movement - falls straight down
+        speedY: speedY,
+        speedX: speedX, // Moving left
         rotation: 0,
         rotationSpeed: (Math.random() - 0.5) * 0.2
     });
@@ -507,12 +510,13 @@ function isCactusInJumpZone() {
 
 // Check if there's already an asteroid threatening the player
 function isAsteroidAlreadyThreatening() {
-    // Since asteroids now fall straight down above the player,
-    // check if any asteroid is still in the air above dino area
+    // Since asteroids come from right to left diagonally,
+    // check if any asteroid is in the threat zone heading toward player
     for (const asteroid of asteroids) {
-        if (asteroid.x > player.x - 50 && 
-            asteroid.x < player.x + 80 && 
-            asteroid.y < 200) {
+        // Asteroid is a threat if it's to the right of player and will pass through player area
+        if (asteroid.x > player.x && 
+            asteroid.x < canvas.width &&
+            asteroid.y < 180) {
             return true;
         }
     }
