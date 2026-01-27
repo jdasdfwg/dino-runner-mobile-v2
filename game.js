@@ -236,37 +236,40 @@ const asteroids = [];
 function spawnAsteroid() {
     const size = 25 + Math.random() * 15;
     
-    // Spawn asteroids from upper-middle to upper-right of screen
-    // Position them so they'll travel toward the player
-    const spawnX = 300 + Math.random() * 400; // Middle to right side
-    const spawnY = -size - 10; // Just above screen
+    // Spawn from right side of screen, at varying heights
+    const spawnX = canvas.width + size;
+    const spawnY = 20 + Math.random() * 80; // Upper area, visible on screen
     
-    // Target position: where the dino is (with some variance)
-    // Player is at x=80, ground is at y=250
-    const targetX = player.x + 20; // Center of dino
-    const targetY = GROUND_Y - 25; // Dino body height
+    // Difficulty progression
+    const difficultyProgress = Math.min(1, frameCount / 3000);
     
-    // Add randomness: ~60% will hit dino area, ~40% will miss
-    const hitChance = Math.random();
-    let finalTargetY = targetY;
-    if (hitChance > 0.6) {
-        // Miss high or low
-        finalTargetY = targetY + (Math.random() > 0.5 ? -80 : 100);
+    // Target: player's x position, at body height
+    // 70% aim directly at dino, 30% slight miss (keeps it interesting)
+    const aimVariance = Math.random();
+    let targetY;
+    if (aimVariance < 0.7) {
+        // Direct hit trajectory - aims at dino body
+        targetY = GROUND_Y - 30 + (Math.random() * 20 - 10);
+    } else {
+        // Near miss - passes just above or hits ground nearby
+        targetY = GROUND_Y - 60 + Math.random() * 100;
     }
     
-    // Calculate velocity to reach target
-    const distanceX = targetX - spawnX;
-    const distanceY = finalTargetY - spawnY;
+    // Calculate trajectory to pass through player's x position at targetY
+    const targetX = player.x + 20;
     
-    // Difficulty increases speed over time
-    const difficultyProgress = Math.min(1, frameCount / 3000);
-    const baseSpeed = 4 + difficultyProgress * 3;
+    // Speed increases with difficulty (travel time decreases)
+    // Longer travel time = more reaction time for player
+    const travelFrames = Math.max(50, 90 - difficultyProgress * 30); // 90 frames early, 50 frames late game
     
-    // Calculate time to reach target based on horizontal distance
-    const travelTime = Math.abs(distanceX) / baseSpeed;
+    const speedX = (targetX - spawnX) / travelFrames;
+    const speedY = (targetY - spawnY) / travelFrames;
     
-    const speedX = distanceX / travelTime;
-    const speedY = distanceY / travelTime;
+    // Pre-generate asteroid shape (so it doesn't flicker)
+    const shapeVariance = [];
+    for (let i = 0; i < 8; i++) {
+        shapeVariance.push(0.7 + Math.random() * 0.3);
+    }
     
     asteroids.push({
         x: spawnX,
@@ -276,7 +279,8 @@ function spawnAsteroid() {
         speedY: speedY,
         speedX: speedX,
         rotation: 0,
-        rotationSpeed: (Math.random() - 0.5) * 0.2
+        rotationSpeed: (Math.random() - 0.5) * 0.15,
+        shape: shapeVariance
     });
 }
 
@@ -302,12 +306,12 @@ function drawAsteroids() {
         
         ctx.fillStyle = '#535353';
         
-        // Draw jagged asteroid shape
+        // Draw jagged asteroid shape using pre-generated variance
         ctx.beginPath();
         const points = 8;
         for (let i = 0; i < points; i++) {
             const angle = (i / points) * Math.PI * 2;
-            const radius = asteroid.width / 2 * (0.7 + Math.random() * 0.3);
+            const radius = asteroid.width / 2 * asteroid.shape[i];
             const px = Math.cos(angle) * radius;
             const py = Math.sin(angle) * radius;
             
@@ -526,12 +530,9 @@ function isCactusInJumpZone() {
 
 // Check if there's already an asteroid threatening the player
 function isAsteroidAlreadyThreatening() {
-    // Check if any asteroid is heading toward player area
+    // Check if any asteroid is currently on screen and heading toward player
     for (const asteroid of asteroids) {
-        // Asteroid is a threat if it's above ground level and heading toward player
-        if (asteroid.x > player.x - 50 && 
-            asteroid.y < GROUND_Y &&
-            asteroid.y > -100) {
+        if (asteroid.x > player.x && asteroid.x < canvas.width + 50) {
             return true;
         }
     }
