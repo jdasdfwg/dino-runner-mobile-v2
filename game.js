@@ -235,21 +235,21 @@ function spawnAsteroid() {
     const size = 25 + Math.random() * 15;
     
     // Spawn asteroids ahead of player so they fall toward the dino
-    // Give player reaction time by spawning 150-350px ahead
-    const spawnAheadDistance = 150 + Math.random() * 200;
+    // Closer spawn distance = more threatening, but still reactable
+    const spawnAheadDistance = 80 + Math.random() * 150;
     const targetX = player.x + spawnAheadDistance;
     
-    // Calculate fall speed based on game difficulty
-    const baseFallSpeed = 3 + (gameSpeed - BASE_SPEED) * 0.3;
+    // Calculate fall speed based on game difficulty - faster as game progresses
+    const baseFallSpeed = 4 + (gameSpeed - BASE_SPEED) * 0.4;
     const fallSpeed = baseFallSpeed + Math.random() * 2;
     
     asteroids.push({
         x: targetX,
-        y: -size - 20,
+        y: -size - 10,
         width: size,
         height: size,
         speedY: fallSpeed,
-        speedX: -gameSpeed * 0.3, // Move left slightly with game scroll
+        speedX: -gameSpeed * 0.2, // Move left slightly with game scroll
         rotation: 0,
         rotationSpeed: (Math.random() - 0.5) * 0.2
     });
@@ -486,6 +486,30 @@ function updateScore() {
 let lastCactusSpawn = 0;
 let lastAsteroidSpawn = 0;
 
+// Check if there's a cactus in the "jump zone" - where player needs to jump
+function isCactusInJumpZone() {
+    const jumpZoneStart = player.x + 50;  // Close enough that player needs to jump soon
+    const jumpZoneEnd = player.x + 200;   // Far enough that asteroid would conflict
+    
+    for (const cactus of cacti) {
+        if (cactus.x > jumpZoneStart && cactus.x < jumpZoneEnd) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Check if there's already an asteroid threatening the player
+function isAsteroidAlreadyThreatening() {
+    const dangerZone = player.x + 250;
+    for (const asteroid of asteroids) {
+        if (asteroid.x < dangerZone && asteroid.y < 150) {
+            return true;
+        }
+    }
+    return false;
+}
+
 function manageSpawns() {
     // Spawn cacti - interval decreases as speed increases
     const cactusInterval = Math.max(50, 140 - gameSpeed * 6);
@@ -494,14 +518,20 @@ function manageSpawns() {
         lastCactusSpawn = frameCount;
     }
     
-    // Spawn asteroids - starts after a brief grace period, then increases with difficulty
-    // Min interval between asteroids to prevent impossible situations
-    const minAsteroidInterval = Math.max(40, 80 - gameSpeed * 2);
-    const asteroidChance = Math.min(0.06, 0.015 + gameSpeed * 0.004);
+    // Spawn asteroids more frequently, but prevent impossible situations
+    // Don't spawn asteroid if:
+    // 1. There's a cactus in the jump zone (would require jumping + umbrella simultaneously)
+    // 2. There's already an asteroid threatening the player
+    const minAsteroidInterval = Math.max(25, 60 - gameSpeed * 2);
+    const asteroidChance = Math.min(0.12, 0.04 + gameSpeed * 0.006);
     
-    if (frameCount > 120 && // Grace period at start
-        Math.random() < asteroidChance && 
-        frameCount - lastAsteroidSpawn > minAsteroidInterval) {
+    const canSpawnAsteroid = 
+        frameCount > 90 && // Short grace period at start
+        !isCactusInJumpZone() && // No cactus requiring a jump
+        !isAsteroidAlreadyThreatening() && // No existing asteroid threat
+        frameCount - lastAsteroidSpawn > minAsteroidInterval;
+    
+    if (canSpawnAsteroid && Math.random() < asteroidChance) {
         spawnAsteroid();
         lastAsteroidSpawn = frameCount;
     }

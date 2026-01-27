@@ -41,6 +41,15 @@ body {
     gap: 30px;
 }
 
+#controls-legend {
+    display: flex;
+    gap: 15px;
+    font-size: 11px;
+    color: #888;
+    margin-top: 5px;
+    font-weight: normal;
+}
+
 /* Start Screen */
 #start-screen {
     position: absolute;
