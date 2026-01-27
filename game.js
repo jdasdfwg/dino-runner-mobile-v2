@@ -236,21 +236,37 @@ const asteroids = [];
 function spawnAsteroid() {
     const size = 25 + Math.random() * 15;
     
-    // Spawn asteroids from the right side, moving left toward the player
-    // Start off-screen right and above
-    const spawnX = canvas.width + size + Math.random() * 100;
-    const spawnY = -size - 10 - Math.random() * 50;
+    // Spawn asteroids from upper-middle to upper-right of screen
+    // Position them so they'll travel toward the player
+    const spawnX = 300 + Math.random() * 400; // Middle to right side
+    const spawnY = -size - 10; // Just above screen
     
-    // Calculate speeds - difficulty increases over time
+    // Target position: where the dino is (with some variance)
+    // Player is at x=80, ground is at y=250
+    const targetX = player.x + 20; // Center of dino
+    const targetY = GROUND_Y - 25; // Dino body height
+    
+    // Add randomness: ~60% will hit dino area, ~40% will miss
+    const hitChance = Math.random();
+    let finalTargetY = targetY;
+    if (hitChance > 0.6) {
+        // Miss high or low
+        finalTargetY = targetY + (Math.random() > 0.5 ? -80 : 100);
+    }
+    
+    // Calculate velocity to reach target
+    const distanceX = targetX - spawnX;
+    const distanceY = finalTargetY - spawnY;
+    
+    // Difficulty increases speed over time
     const difficultyProgress = Math.min(1, frameCount / 3000);
+    const baseSpeed = 4 + difficultyProgress * 3;
     
-    // Horizontal speed (moving left): 4-6 at start, 6-9 at max difficulty
-    const baseSpeedX = 4 + difficultyProgress * 2;
-    const speedX = -(baseSpeedX + Math.random() * 2);
+    // Calculate time to reach target based on horizontal distance
+    const travelTime = Math.abs(distanceX) / baseSpeed;
     
-    // Vertical speed (falling down): slower than horizontal to create diagonal path
-    const baseSpeedY = 2 + difficultyProgress * 1.5;
-    const speedY = baseSpeedY + Math.random() * 1;
+    const speedX = distanceX / travelTime;
+    const speedY = distanceY / travelTime;
     
     asteroids.push({
         x: spawnX,
@@ -258,7 +274,7 @@ function spawnAsteroid() {
         width: size,
         height: size,
         speedY: speedY,
-        speedX: speedX, // Moving left
+        speedX: speedX,
         rotation: 0,
         rotationSpeed: (Math.random() - 0.5) * 0.2
     });
@@ -510,13 +526,12 @@ function isCactusInJumpZone() {
 
 // Check if there's already an asteroid threatening the player
 function isAsteroidAlreadyThreatening() {
-    // Since asteroids come from right to left diagonally,
-    // check if any asteroid is in the threat zone heading toward player
+    // Check if any asteroid is heading toward player area
     for (const asteroid of asteroids) {
-        // Asteroid is a threat if it's to the right of player and will pass through player area
-        if (asteroid.x > player.x && 
-            asteroid.x < canvas.width &&
-            asteroid.y < 180) {
+        // Asteroid is a threat if it's above ground level and heading toward player
+        if (asteroid.x > player.x - 50 && 
+            asteroid.y < GROUND_Y &&
+            asteroid.y > -100) {
             return true;
         }
     }
