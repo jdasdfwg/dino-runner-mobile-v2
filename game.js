@@ -236,16 +236,15 @@ const asteroids = [];
 function spawnAsteroid() {
     const size = 25 + Math.random() * 15;
     
-    // Spawn directly above the player area - falls straight down
-    // Small random offset so not always perfectly centered
-    const spawnX = player.x + (Math.random() * 40 - 10);
+    // Spawn slightly to the right of player, falls down and drifts left
+    const spawnX = player.x + 50 + Math.random() * 100; // 50-150px to the right
     const spawnY = -size - 20;
     
     // Difficulty progression
     const difficultyProgress = Math.min(1, frameCount / 3000);
     
-    // Falls straight down (no horizontal movement)
-    const speedX = 0;
+    // Slight left drift (negative = moving left), never right
+    const speedX = -(1 + Math.random() * 1.5); // -1 to -2.5
     
     // Fall speed - starts slow, gets faster
     const baseFallSpeed = 3 + difficultyProgress * 2;
