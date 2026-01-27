@@ -60,17 +60,6 @@ body {
     color: #535353;
 }
 
-.dino-icon {
-    font-size: 48px;
-    margin-bottom: 10px;
-    animation: bounce 0.6s infinite alternate;
-}
-
-@keyframes bounce {
-    from { transform: translateY(0); }
-    to { transform: translateY(-10px); }
-}
-
 .start-content h1 {
     font-size: 32px;
     margin-bottom: 5px;

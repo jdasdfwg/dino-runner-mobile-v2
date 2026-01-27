@@ -21,9 +21,9 @@ const gameContainer = document.getElementById('game-container');
 const GROUND_Y = 250;           // Ground level
 const GRAVITY = 0.8;            // Gravity strength
 const JUMP_FORCE = -15;         // Jump velocity
-const BASE_SPEED = 6;           // Starting game speed
-const MAX_SPEED = 15;           // Maximum game speed
-const SPEED_INCREMENT = 0.001;  // Speed increase per frame
+const BASE_SPEED = 5;           // Starting game speed
+const MAX_SPEED = 18;           // Maximum game speed
+const SPEED_INCREMENT = 0.002;  // Speed increase per frame (faster ramp up)
 
 // ============================================
 // GAME STATE
@@ -232,14 +232,24 @@ function drawCacti() {
 const asteroids = [];
 
 function spawnAsteroid() {
-    const size = 20 + Math.random() * 20;
+    const size = 25 + Math.random() * 15;
+    
+    // Spawn asteroids ahead of player so they fall toward the dino
+    // Give player reaction time by spawning 150-350px ahead
+    const spawnAheadDistance = 150 + Math.random() * 200;
+    const targetX = player.x + spawnAheadDistance;
+    
+    // Calculate fall speed based on game difficulty
+    const baseFallSpeed = 3 + (gameSpeed - BASE_SPEED) * 0.3;
+    const fallSpeed = baseFallSpeed + Math.random() * 2;
     
     asteroids.push({
-        x: canvas.width + Math.random() * 200,
-        y: -size,
+        x: targetX,
+        y: -size - 20,
         width: size,
         height: size,
-        speedY: 3 + Math.random() * 2,
+        speedY: fallSpeed,
+        speedX: -gameSpeed * 0.3, // Move left slightly with game scroll
         rotation: 0,
         rotationSpeed: (Math.random() - 0.5) * 0.2
     });
@@ -248,7 +258,7 @@ function spawnAsteroid() {
 function updateAsteroids() {
     for (let i = asteroids.length - 1; i >= 0; i--) {
         const asteroid = asteroids[i];
-        asteroid.x -= gameSpeed * 0.5;
+        asteroid.x += asteroid.speedX;
         asteroid.y += asteroid.speedY;
         asteroid.rotation += asteroid.rotationSpeed;
         
@@ -477,16 +487,21 @@ let lastCactusSpawn = 0;
 let lastAsteroidSpawn = 0;
 
 function manageSpawns() {
-    // Spawn cacti
-    const cactusInterval = Math.max(60, 150 - gameSpeed * 5);
-    if (frameCount - lastCactusSpawn > cactusInterval + Math.random() * 100) {
+    // Spawn cacti - interval decreases as speed increases
+    const cactusInterval = Math.max(50, 140 - gameSpeed * 6);
+    if (frameCount - lastCactusSpawn > cactusInterval + Math.random() * 80) {
         spawnCactus();
         lastCactusSpawn = frameCount;
     }
     
-    // Spawn asteroids (increases with difficulty)
-    const asteroidChance = Math.min(0.03, 0.005 + gameSpeed * 0.002);
-    if (Math.random() < asteroidChance && frameCount - lastAsteroidSpawn > 30) {
+    // Spawn asteroids - starts after a brief grace period, then increases with difficulty
+    // Min interval between asteroids to prevent impossible situations
+    const minAsteroidInterval = Math.max(40, 80 - gameSpeed * 2);
+    const asteroidChance = Math.min(0.06, 0.015 + gameSpeed * 0.004);
+    
+    if (frameCount > 120 && // Grace period at start
+        Math.random() < asteroidChance && 
+        frameCount - lastAsteroidSpawn > minAsteroidInterval) {
         spawnAsteroid();
         lastAsteroidSpawn = frameCount;
     }
