@@ -153,12 +153,13 @@ const player = {
     },
     
     // Get umbrella hitbox for collision detection
+    // Made wider and taller to catch asteroids falling straight down
     getUmbrellaHitbox() {
         return {
-            x: this.x - 15,
-            y: this.y - this.height - 45,
-            width: 70,
-            height: 30
+            x: this.x - 25,
+            y: this.y - this.height - 60,
+            width: 90,
+            height: 80
         };
     },
     
@@ -234,14 +235,14 @@ const asteroids = [];
 function spawnAsteroid() {
     const size = 25 + Math.random() * 15;
     
-    // Spawn asteroids ahead of player so they fall toward the dino
-    // Closer spawn distance = more threatening, but still reactable
-    const spawnAheadDistance = 80 + Math.random() * 150;
-    const targetX = player.x + spawnAheadDistance;
+    // Spawn asteroids directly above the player's center position
+    // This ensures they fall straight down onto the dino
+    // Add small random offset so they're not always perfectly centered
+    const targetX = player.x + 5 + (Math.random() * 30 - 15);
     
     // Calculate fall speed based on game difficulty - faster as game progresses
     const baseFallSpeed = 4 + (gameSpeed - BASE_SPEED) * 0.4;
-    const fallSpeed = baseFallSpeed + Math.random() * 2;
+    const fallSpeed = baseFallSpeed + Math.random() * 1.5;
     
     asteroids.push({
         x: targetX,
@@ -249,7 +250,7 @@ function spawnAsteroid() {
         width: size,
         height: size,
         speedY: fallSpeed,
-        speedX: -gameSpeed * 0.2, // Move left slightly with game scroll
+        speedX: 0, // No horizontal movement - falls straight down
         rotation: 0,
         rotationSpeed: (Math.random() - 0.5) * 0.2
     });
@@ -501,9 +502,12 @@ function isCactusInJumpZone() {
 
 // Check if there's already an asteroid threatening the player
 function isAsteroidAlreadyThreatening() {
-    const dangerZone = player.x + 250;
+    // Since asteroids now fall straight down above the player,
+    // check if any asteroid is still in the air above dino area
     for (const asteroid of asteroids) {
-        if (asteroid.x < dangerZone && asteroid.y < 150) {
+        if (asteroid.x > player.x - 50 && 
+            asteroid.x < player.x + 80 && 
+            asteroid.y < 200) {
             return true;
         }
     }
