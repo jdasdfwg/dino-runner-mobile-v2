@@ -803,8 +803,8 @@ function checkCollisions() {
             const horizontalOverlap = playerHitbox.x < cactus.x + cactus.width && 
                                       playerHitbox.x + playerHitbox.width > cactus.x;
             
-            // If player is directly above cactus with small clearance (within 110 pixels)
-            if (horizontalOverlap && playerBottom < cactusTop && cactusTop - playerBottom < 110) {
+            // If player is directly above cactus with small clearance (within 40 pixels)
+            if (horizontalOverlap && playerBottom < cactusTop && cactusTop - playerBottom < 40) {
                 passedCacti.add(cactus.id);
                 score += 25;
                 createBonusText(cactus.x + cactus.width / 2, cactus.y - 20, 'CLOSE! +25', '#333');
