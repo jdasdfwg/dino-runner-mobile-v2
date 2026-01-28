@@ -110,12 +110,12 @@ body {
     font-weight: bold;
     font-family: 'Courier New', monospace;
     color: #535353;
-    background: transparent;
+    background: #fff;
     border: 2px solid #535353;
     border-radius: 4px;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
-    z-index: 5;
+    z-index: 20;
 }
 
 .btn-mute:hover {
