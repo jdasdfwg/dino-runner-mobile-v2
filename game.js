@@ -782,7 +782,6 @@ function checkCollision(rect1, rect2) {
 
 // Track cacti that have been checked for near miss (to avoid double bonus)
 const passedCacti = new Set();
-let closeJumpCombo = 0; // Combo counter for sequential close jumps
 
 function checkCollisions() {
     const playerHitbox = player.getHitbox();
@@ -798,7 +797,6 @@ function checkCollisions() {
         }
         
         // Check for near miss bonus (player just cleared the cactus)
-        // Player must be jumping, cactus must be passing under, and very close clearance
         if (player.isJumping && !passedCacti.has(cactus.id)) {
             const playerBottom = playerHitbox.y + playerHitbox.height;
             const cactusTop = cactus.y;
@@ -808,15 +806,8 @@ function checkCollisions() {
             // If player is directly above cactus with small clearance (within 110 pixels)
             if (horizontalOverlap && playerBottom < cactusTop && cactusTop - playerBottom < 110) {
                 passedCacti.add(cactus.id);
-                closeJumpCombo++;
-                const bonus = 25 * closeJumpCombo;
-                score += bonus;
-                const comboText = closeJumpCombo > 1 ? 'CLOSE x' + closeJumpCombo + '! +' + bonus : 'CLOSE! +' + bonus;
-                createBonusText(cactus.x + cactus.width / 2, cactus.y - 20, comboText, '#333');
-            } else if (horizontalOverlap && playerBottom < cactusTop) {
-                // Player jumped over but not close enough - reset combo
-                passedCacti.add(cactus.id);
-                closeJumpCombo = 0;
+                score += 25;
+                createBonusText(cactus.x + cactus.width / 2, cactus.y - 20, 'CLOSE! +25', '#333');
             }
         }
         
@@ -1161,7 +1152,6 @@ function startGame() {
     bonusTexts.length = 0;
     fireParticles.length = 0;
     passedCacti.clear();
-    closeJumpCombo = 0;
     cactusIdCounter = 0;
     
     // Reset all landmarks
