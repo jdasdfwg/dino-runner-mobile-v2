@@ -101,7 +101,13 @@ const player = {
         
         // Apply gravity
         this.velocityY += GRAVITY;
-        this.y += this.velocityY;
+        
+        // Umbrella slows falling (parachute effect)
+        if (this.isUmbrellaActive && this.velocityY > 0) {
+            this.y += this.velocityY * 0.5; // Half speed when falling with umbrella
+        } else {
+            this.y += this.velocityY;
+        }
         
         // Ground collision
         if (this.y >= GROUND_Y) {
