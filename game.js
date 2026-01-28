@@ -790,7 +790,7 @@ function manageSpawns() {
     const asteroidChance = 0.01 + difficultyProgress * 0.07;
     
     const canSpawnAsteroid = 
-        frameCount > 1200 && // No asteroids for first 20 seconds
+        frameCount > 600 && // No asteroids for first 10 seconds
         !isCactusInJumpZone() && // No cactus requiring a jump
         !isAsteroidAlreadyThreatening() && // No existing asteroid threat
         frameCount - lastAsteroidSpawn > minAsteroidInterval;
