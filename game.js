@@ -34,6 +34,13 @@ let highScore = parseInt(localStorage.getItem('dinoHighScore')) || 0;
 let gameSpeed = BASE_SPEED;
 let frameCount = 0;
 
+// Volcano/fire mode (activates at score 500)
+let volcanoMode = false;
+const VOLCANO_SCORE = 500;
+
+// Bonus text popups
+const bonusTexts = [];
+
 // ============================================
 // INPUT STATE
 // ============================================
@@ -328,6 +335,19 @@ function drawAsteroids() {
 const clouds = [];
 const groundLines = [];
 
+// Volcano state
+const volcano = {
+    x: 700,
+    baseY: GROUND_Y,
+    width: 80,
+    height: 100,
+    eruptionParticles: [],
+    lavaGlow: 0
+};
+
+// Fire trail particles (behind asteroids in volcano mode)
+const fireParticles = [];
+
 function initBackground() {
     // Initialize clouds
     for (let i = 0; i < 5; i++) {
@@ -364,11 +384,138 @@ function updateBackground() {
             line.x = canvas.width + Math.random() * 100;
         }
     });
+    
+    // Update volcano if in volcano mode
+    if (volcanoMode) {
+        updateVolcano();
+        updateFireParticles();
+    }
+}
+
+function updateVolcano() {
+    // Animate lava glow
+    volcano.lavaGlow = 0.5 + Math.sin(frameCount * 0.1) * 0.3;
+    
+    // Spawn eruption particles randomly
+    if (Math.random() < 0.15) {
+        volcano.eruptionParticles.push({
+            x: volcano.x + volcano.width / 2 + (Math.random() - 0.5) * 20,
+            y: volcano.baseY - volcano.height,
+            vx: (Math.random() - 0.5) * 3,
+            vy: -3 - Math.random() * 4,
+            life: 40 + Math.random() * 30,
+            maxLife: 70,
+            size: 4 + Math.random() * 6,
+            type: Math.random() < 0.7 ? 'fire' : 'rock'
+        });
+    }
+    
+    // Update eruption particles
+    for (let i = volcano.eruptionParticles.length - 1; i >= 0; i--) {
+        const p = volcano.eruptionParticles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.15; // Gravity
+        p.life--;
+        
+        if (p.life <= 0 || p.y > GROUND_Y) {
+            volcano.eruptionParticles.splice(i, 1);
+        }
+    }
+}
+
+function updateFireParticles() {
+    // Spawn fire behind each asteroid
+    asteroids.forEach(asteroid => {
+        if (Math.random() < 0.4) {
+            fireParticles.push({
+                x: asteroid.x + asteroid.width / 2 + (Math.random() - 0.5) * 10,
+                y: asteroid.y - asteroid.height / 2 + (Math.random() - 0.5) * 10,
+                vx: (Math.random() - 0.5) * 2,
+                vy: -1 - Math.random() * 2,
+                life: 15 + Math.random() * 10,
+                maxLife: 25,
+                size: 3 + Math.random() * 5
+            });
+        }
+    });
+    
+    // Update fire particles
+    for (let i = fireParticles.length - 1; i >= 0; i--) {
+        const p = fireParticles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life--;
+        p.size *= 0.95;
+        
+        if (p.life <= 0) {
+            fireParticles.splice(i, 1);
+        }
+    }
+}
+
+function drawVolcano() {
+    if (!volcanoMode) return;
+    
+    // Draw volcano mountain
+    ctx.fillStyle = '#3d3d3d';
+    ctx.beginPath();
+    ctx.moveTo(volcano.x, volcano.baseY);
+    ctx.lineTo(volcano.x + volcano.width / 2 - 15, volcano.baseY - volcano.height);
+    ctx.lineTo(volcano.x + volcano.width / 2 + 15, volcano.baseY - volcano.height);
+    ctx.lineTo(volcano.x + volcano.width, volcano.baseY);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Draw lava crater glow
+    const gradient = ctx.createRadialGradient(
+        volcano.x + volcano.width / 2, volcano.baseY - volcano.height + 5,
+        5,
+        volcano.x + volcano.width / 2, volcano.baseY - volcano.height + 5,
+        25
+    );
+    gradient.addColorStop(0, `rgba(255, 100, 0, ${volcano.lavaGlow})`);
+    gradient.addColorStop(0.5, `rgba(255, 50, 0, ${volcano.lavaGlow * 0.5})`);
+    gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(volcano.x + volcano.width / 2, volcano.baseY - volcano.height + 5, 25, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Draw eruption particles
+    volcano.eruptionParticles.forEach(p => {
+        const alpha = p.life / p.maxLife;
+        if (p.type === 'fire') {
+            ctx.fillStyle = `rgba(255, ${50 + Math.random() * 100}, 0, ${alpha})`;
+        } else {
+            ctx.fillStyle = `rgba(80, 80, 80, ${alpha})`;
+        }
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size * alpha, 0, Math.PI * 2);
+        ctx.fill();
+    });
+}
+
+function drawFireTrails() {
+    if (!volcanoMode) return;
+    
+    fireParticles.forEach(p => {
+        const alpha = p.life / p.maxLife;
+        const r = 255;
+        const g = Math.floor(100 + (155 * (1 - alpha))); // Yellow to orange
+        ctx.fillStyle = `rgba(${r}, ${g}, 0, ${alpha * 0.8})`;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+    });
 }
 
 function drawBackground() {
-    // Draw clouds
-    ctx.fillStyle = '#e0e0e0';
+    // Draw volcano behind everything if active
+    drawVolcano();
+    
+    // Draw clouds (darker in volcano mode)
+    ctx.fillStyle = volcanoMode ? '#a0a0a0' : '#e0e0e0';
     clouds.forEach(cloud => {
         ctx.beginPath();
         ctx.arc(cloud.x, cloud.y, 15, 0, Math.PI * 2);
@@ -378,11 +525,11 @@ function drawBackground() {
     });
     
     // Draw ground line
-    ctx.fillStyle = '#535353';
+    ctx.fillStyle = volcanoMode ? '#4a3030' : '#535353';
     ctx.fillRect(0, GROUND_Y, canvas.width, 2);
     
     // Draw ground texture
-    ctx.fillStyle = '#c0c0c0';
+    ctx.fillStyle = volcanoMode ? '#8a6060' : '#c0c0c0';
     groundLines.forEach(line => {
         ctx.fillRect(line.x, GROUND_Y + 5, line.width, 2);
     });
@@ -398,14 +545,42 @@ function checkCollision(rect1, rect2) {
            rect1.y + rect1.height > rect2.y;
 }
 
+// Track cacti that have been checked for near miss (to avoid double bonus)
+const passedCacti = new Set();
+
 function checkCollisions() {
     const playerHitbox = player.getHitbox();
     const umbrellaHitbox = player.getUmbrellaHitbox();
     
-    // Check cactus collisions
-    for (const cactus of cacti) {
+    // Check cactus collisions and near misses
+    for (let i = cacti.length - 1; i >= 0; i--) {
+        const cactus = cacti[i];
+        
+        // Check for collision
         if (checkCollision(playerHitbox, cactus)) {
             return true; // Game over
+        }
+        
+        // Check for near miss bonus (player just cleared the cactus)
+        // Player must be jumping, cactus must be passing under, and very close clearance
+        if (player.isJumping && !passedCacti.has(i)) {
+            const playerBottom = playerHitbox.y + playerHitbox.height;
+            const cactusTop = cactus.y;
+            const horizontalOverlap = playerHitbox.x < cactus.x + cactus.width && 
+                                      playerHitbox.x + playerHitbox.width > cactus.x;
+            
+            // If player is directly above cactus with small clearance (within 15 pixels)
+            if (horizontalOverlap && playerBottom < cactusTop && cactusTop - playerBottom < 15) {
+                passedCacti.add(i);
+                const bonus = 25;
+                score += bonus;
+                createBonusText(cactus.x + cactus.width / 2, cactus.y - 20, 'CLOSE! +' + bonus, '#ff6600');
+            }
+        }
+        
+        // Clean up passed cacti tracking when cactus goes off screen
+        if (cactus.x + cactus.width < 0) {
+            passedCacti.delete(i);
         }
     }
     
@@ -415,10 +590,32 @@ function checkCollisions() {
         
         // Check if umbrella blocks asteroid
         if (player.isUmbrellaActive && checkCollision(umbrellaHitbox, asteroid)) {
+            // Calculate how close the asteroid was to the player for perfect timing bonus
+            const asteroidCenterY = asteroid.y + asteroid.height / 2;
+            const playerTop = playerHitbox.y;
+            const distanceToPlayer = playerTop - asteroidCenterY;
+            
+            // Perfect timing: asteroid was very close to hitting player (within 30 pixels)
+            let bonus = 10;
+            let bonusText = '+10';
+            let bonusColor = '#535353';
+            
+            if (distanceToPlayer < 30) {
+                bonus = 50;
+                bonusText = 'PERFECT! +50';
+                bonusColor = '#ff0066';
+                createBonusText(asteroid.x, asteroid.y, bonusText, bonusColor);
+            } else if (distanceToPlayer < 50) {
+                bonus = 25;
+                bonusText = 'NICE! +25';
+                bonusColor = '#0099ff';
+                createBonusText(asteroid.x, asteroid.y, bonusText, bonusColor);
+            }
+            
             // Asteroid blocked! Remove it and add points
             asteroids.splice(i, 1);
-            score += 10;
-            createBlockEffect(asteroid.x, asteroid.y);
+            score += bonus;
+            createBlockEffect(asteroid.x + asteroid.width / 2, asteroid.y + asteroid.height / 2);
             continue;
         }
         
@@ -478,10 +675,56 @@ function screenShake() {
 }
 
 // ============================================
+// BONUS TEXT POPUPS
+// ============================================
+function createBonusText(x, y, text, color) {
+    bonusTexts.push({
+        x: x,
+        y: y,
+        text: text,
+        color: color,
+        life: 60,
+        vy: -2
+    });
+}
+
+function updateBonusTexts() {
+    for (let i = bonusTexts.length - 1; i >= 0; i--) {
+        const bt = bonusTexts[i];
+        bt.y += bt.vy;
+        bt.vy *= 0.95;
+        bt.life--;
+        
+        if (bt.life <= 0) {
+            bonusTexts.splice(i, 1);
+        }
+    }
+}
+
+function drawBonusTexts() {
+    bonusTexts.forEach(bt => {
+        const alpha = Math.min(1, bt.life / 30);
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = bt.color;
+        ctx.font = 'bold 16px "Courier New", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(bt.text, bt.x, bt.y);
+    });
+    ctx.globalAlpha = 1;
+    ctx.textAlign = 'left';
+}
+
+// ============================================
 // SCORING
 // ============================================
 function updateScore() {
     score++;
+    
+    // Activate volcano mode at score 500
+    if (!volcanoMode && score >= VOLCANO_SCORE) {
+        volcanoMode = true;
+        createBonusText(canvas.width / 2, canvas.height / 2, '🌋 VOLCANO MODE!', '#ff3300');
+    }
     
     // Format score with leading zeros
     currentScoreEl.textContent = score.toString().padStart(5, '0');
@@ -580,6 +823,7 @@ function gameLoop() {
         updateAsteroids();
         updateBackground();
         updateParticles();
+        updateBonusTexts();
         manageSpawns();
         
         // Check for collisions
@@ -595,10 +839,12 @@ function gameLoop() {
     
     // Draw everything
     drawBackground();
+    drawFireTrails(); // Draw fire behind asteroids
     drawCacti();
     drawAsteroids();
     player.draw();
     drawParticles();
+    drawBonusTexts();
     
     // Continue game loop
     requestAnimationFrame(gameLoop);
@@ -614,11 +860,16 @@ function startGame() {
     frameCount = 0;
     lastCactusSpawn = 0;
     lastAsteroidSpawn = 0;
+    volcanoMode = false;
     
     // Clear obstacles
     cacti.length = 0;
     asteroids.length = 0;
     particles.length = 0;
+    bonusTexts.length = 0;
+    fireParticles.length = 0;
+    volcano.eruptionParticles.length = 0;
+    passedCacti.clear();
     
     // Reset player
     player.reset();
