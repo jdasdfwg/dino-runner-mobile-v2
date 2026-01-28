@@ -34,9 +34,13 @@ let highScore = parseInt(localStorage.getItem('dinoHighScore')) || 0;
 let gameSpeed = BASE_SPEED;
 let frameCount = 0;
 
-// Volcano/fire mode (activates at score 500)
-let volcanoMode = false;
-const VOLCANO_SCORE = 500;
+// Era system based on levels
+// Level 1: Normal
+// Level 2-3: Volcano Era
+// Level 4-5: Ice Age (Iceberg)
+// Level 6-7: Beach (Palm Tree)
+// Level 8-10: Civilization (Empire State Building)
+let currentEra = 'normal'; // 'normal', 'volcano', 'ice', 'beach', 'civilization'
 
 // Level system
 let currentLevel = 1;
@@ -343,18 +347,52 @@ function drawAsteroids() {
 const clouds = [];
 const groundLines = [];
 
-// Volcano state
+// Era landmarks - all at same X position, rise/fall based on era
+const LANDMARK_X = 700;
+
+// Volcano (Level 2-3)
 const volcano = {
-    x: 700,
+    x: LANDMARK_X,
     baseY: GROUND_Y,
     width: 80,
     height: 100,
-    currentHeight: 0,  // Starts at 0, rises to full height
+    currentHeight: 0,
+    targetHeight: 0,
     eruptionParticles: [],
     lavaGlow: 0
 };
 
-// Fire trail particles (behind asteroids in volcano mode)
+// Iceberg (Level 4-5 - Ice Age)
+const iceberg = {
+    x: LANDMARK_X,
+    baseY: GROUND_Y,
+    width: 90,
+    height: 120,
+    currentHeight: 0,
+    targetHeight: 0
+};
+
+// Palm Tree (Level 6-7 - Beach)
+const palmTree = {
+    x: LANDMARK_X + 20,
+    baseY: GROUND_Y,
+    width: 50,
+    height: 110,
+    currentHeight: 0,
+    targetHeight: 0
+};
+
+// Empire State Building (Level 8-10 - Civilization)
+const empireState = {
+    x: LANDMARK_X,
+    baseY: GROUND_Y,
+    width: 60,
+    height: 140,
+    currentHeight: 0,
+    targetHeight: 0
+};
+
+// Fire trail particles (behind asteroids in volcano era)
 const fireParticles = [];
 
 function initBackground() {
@@ -394,36 +432,59 @@ function updateBackground() {
         }
     });
     
-    // Update volcano if in volcano mode
-    if (volcanoMode) {
-        updateVolcano();
-        updateFireParticles();
-    }
+    // Update all landmarks (they rise/fall based on era)
+    updateLandmarks();
+    updateFireParticles();
 }
 
-function updateVolcano() {
-    // Slowly rise the volcano from the ground
-    if (volcano.currentHeight < volcano.height) {
-        volcano.currentHeight += 0.5; // Rise speed
+function updateLandmarks() {
+    const riseSpeed = 0.8;
+    const fallSpeed = 1.2;
+    
+    // Update volcano height
+    if (volcano.currentHeight < volcano.targetHeight) {
+        volcano.currentHeight = Math.min(volcano.targetHeight, volcano.currentHeight + riseSpeed);
+    } else if (volcano.currentHeight > volcano.targetHeight) {
+        volcano.currentHeight = Math.max(volcano.targetHeight, volcano.currentHeight - fallSpeed);
     }
     
-    // Animate lava glow (only when fully risen)
-    if (volcano.currentHeight >= volcano.height * 0.8) {
+    // Update iceberg height
+    if (iceberg.currentHeight < iceberg.targetHeight) {
+        iceberg.currentHeight = Math.min(iceberg.targetHeight, iceberg.currentHeight + riseSpeed);
+    } else if (iceberg.currentHeight > iceberg.targetHeight) {
+        iceberg.currentHeight = Math.max(iceberg.targetHeight, iceberg.currentHeight - fallSpeed);
+    }
+    
+    // Update palm tree height
+    if (palmTree.currentHeight < palmTree.targetHeight) {
+        palmTree.currentHeight = Math.min(palmTree.targetHeight, palmTree.currentHeight + riseSpeed);
+    } else if (palmTree.currentHeight > palmTree.targetHeight) {
+        palmTree.currentHeight = Math.max(palmTree.targetHeight, palmTree.currentHeight - fallSpeed);
+    }
+    
+    // Update empire state height
+    if (empireState.currentHeight < empireState.targetHeight) {
+        empireState.currentHeight = Math.min(empireState.targetHeight, empireState.currentHeight + riseSpeed);
+    } else if (empireState.currentHeight > empireState.targetHeight) {
+        empireState.currentHeight = Math.max(empireState.targetHeight, empireState.currentHeight - fallSpeed);
+    }
+    
+    // Volcano eruption particles (only when visible)
+    if (volcano.currentHeight > volcano.height * 0.8) {
         volcano.lavaGlow = 0.5 + Math.sin(frameCount * 0.1) * 0.3;
-    }
-    
-    // Spawn eruption particles only when volcano is mostly risen
-    if (volcano.currentHeight >= volcano.height * 0.9 && Math.random() < 0.15) {
-        volcano.eruptionParticles.push({
-            x: volcano.x + volcano.width / 2 + (Math.random() - 0.5) * 20,
-            y: volcano.baseY - volcano.currentHeight,
-            vx: (Math.random() - 0.5) * 3,
-            vy: -3 - Math.random() * 4,
-            life: 40 + Math.random() * 30,
-            maxLife: 70,
-            size: 4 + Math.random() * 6,
-            type: Math.random() < 0.7 ? 'fire' : 'rock'
-        });
+        
+        if (Math.random() < 0.15) {
+            volcano.eruptionParticles.push({
+                x: volcano.x + volcano.width / 2 + (Math.random() - 0.5) * 20,
+                y: volcano.baseY - volcano.currentHeight,
+                vx: (Math.random() - 0.5) * 3,
+                vy: -3 - Math.random() * 4,
+                life: 40 + Math.random() * 30,
+                maxLife: 70,
+                size: 4 + Math.random() * 6,
+                type: Math.random() < 0.7 ? 'fire' : 'rock'
+            });
+        }
     }
     
     // Update eruption particles
@@ -431,9 +492,8 @@ function updateVolcano() {
         const p = volcano.eruptionParticles[i];
         p.x += p.vx;
         p.y += p.vy;
-        p.vy += 0.15; // Gravity
+        p.vy += 0.15;
         p.life--;
-        
         if (p.life <= 0 || p.y > GROUND_Y) {
             volcano.eruptionParticles.splice(i, 1);
         }
@@ -441,20 +501,22 @@ function updateVolcano() {
 }
 
 function updateFireParticles() {
-    // Spawn fire behind each asteroid
-    asteroids.forEach(asteroid => {
-        if (Math.random() < 0.4) {
-            fireParticles.push({
-                x: asteroid.x + asteroid.width / 2 + (Math.random() - 0.5) * 10,
-                y: asteroid.y - asteroid.height / 2 + (Math.random() - 0.5) * 10,
-                vx: (Math.random() - 0.5) * 2,
-                vy: -1 - Math.random() * 2,
-                life: 15 + Math.random() * 10,
-                maxLife: 25,
-                size: 3 + Math.random() * 5
-            });
-        }
-    });
+    // Only spawn fire behind asteroids in volcano era
+    if (currentEra === 'volcano') {
+        asteroids.forEach(asteroid => {
+            if (Math.random() < 0.4) {
+                fireParticles.push({
+                    x: asteroid.x + asteroid.width / 2 + (Math.random() - 0.5) * 10,
+                    y: asteroid.y - asteroid.height / 2 + (Math.random() - 0.5) * 10,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: -1 - Math.random() * 2,
+                    life: 15 + Math.random() * 10,
+                    maxLife: 25,
+                    size: 3 + Math.random() * 5
+                });
+            }
+        });
+    }
     
     // Update fire particles
     for (let i = fireParticles.length - 1; i >= 0; i--) {
@@ -463,7 +525,6 @@ function updateFireParticles() {
         p.y += p.vy;
         p.life--;
         p.size *= 0.95;
-        
         if (p.life <= 0) {
             fireParticles.splice(i, 1);
         }
@@ -471,9 +532,9 @@ function updateFireParticles() {
 }
 
 function drawVolcano() {
-    if (!volcanoMode || volcano.currentHeight <= 0) return;
+    if (volcano.currentHeight <= 0) return;
     
-    // Draw volcano mountain (using currentHeight for rising animation)
+    // Draw volcano mountain
     ctx.fillStyle = '#3d3d3d';
     ctx.beginPath();
     ctx.moveTo(volcano.x, volcano.baseY);
@@ -483,13 +544,11 @@ function drawVolcano() {
     ctx.closePath();
     ctx.fill();
     
-    // Draw crater glow only when mostly risen (grey/white)
+    // Draw crater glow
     if (volcano.currentHeight >= volcano.height * 0.8) {
         const gradient = ctx.createRadialGradient(
-            volcano.x + volcano.width / 2, volcano.baseY - volcano.currentHeight + 5,
-            5,
-            volcano.x + volcano.width / 2, volcano.baseY - volcano.currentHeight + 5,
-            25
+            volcano.x + volcano.width / 2, volcano.baseY - volcano.currentHeight + 5, 5,
+            volcano.x + volcano.width / 2, volcano.baseY - volcano.currentHeight + 5, 25
         );
         gradient.addColorStop(0, `rgba(255, 255, 255, ${volcano.lavaGlow})`);
         gradient.addColorStop(0.5, `rgba(200, 200, 200, ${volcano.lavaGlow * 0.5})`);
@@ -500,25 +559,171 @@ function drawVolcano() {
         ctx.fill();
     }
     
-    // Draw eruption particles (grey tones)
+    // Draw eruption particles
     volcano.eruptionParticles.forEach(p => {
         const alpha = p.life / p.maxLife;
-        if (p.type === 'fire') {
-            // Light grey "smoke/ash"
-            const grey = 180 + Math.floor(Math.random() * 50);
-            ctx.fillStyle = `rgba(${grey}, ${grey}, ${grey}, ${alpha})`;
-        } else {
-            // Dark grey rocks
-            ctx.fillStyle = `rgba(60, 60, 60, ${alpha})`;
-        }
+        const grey = p.type === 'fire' ? 180 + Math.floor(Math.random() * 50) : 60;
+        ctx.fillStyle = `rgba(${grey}, ${grey}, ${grey}, ${alpha})`;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size * alpha, 0, Math.PI * 2);
         ctx.fill();
     });
 }
 
+function drawIceberg() {
+    if (iceberg.currentHeight <= 0) return;
+    
+    const h = iceberg.currentHeight;
+    const x = iceberg.x;
+    const y = iceberg.baseY;
+    
+    // Main iceberg body (jagged shape)
+    ctx.fillStyle = '#d0d0d0';
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + 15, y - h * 0.7);
+    ctx.lineTo(x + 30, y - h * 0.5);
+    ctx.lineTo(x + 45, y - h);
+    ctx.lineTo(x + 60, y - h * 0.6);
+    ctx.lineTo(x + 75, y - h * 0.8);
+    ctx.lineTo(x + 90, y);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Ice highlights
+    ctx.fillStyle = '#e8e8e8';
+    ctx.beginPath();
+    ctx.moveTo(x + 45, y - h);
+    ctx.lineTo(x + 50, y - h * 0.7);
+    ctx.lineTo(x + 40, y - h * 0.75);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Darker ice shadows
+    ctx.fillStyle = '#a0a0a0';
+    ctx.beginPath();
+    ctx.moveTo(x + 60, y - h * 0.6);
+    ctx.lineTo(x + 75, y - h * 0.8);
+    ctx.lineTo(x + 80, y - h * 0.3);
+    ctx.lineTo(x + 70, y - h * 0.4);
+    ctx.closePath();
+    ctx.fill();
+}
+
+function drawPalmTree() {
+    if (palmTree.currentHeight <= 0) return;
+    
+    const h = palmTree.currentHeight;
+    const x = palmTree.x;
+    const y = palmTree.baseY;
+    
+    // Trunk
+    ctx.fillStyle = '#5a5a5a';
+    ctx.beginPath();
+    ctx.moveTo(x + 20, y);
+    ctx.lineTo(x + 30, y);
+    ctx.lineTo(x + 28, y - h * 0.85);
+    ctx.lineTo(x + 22, y - h * 0.85);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Trunk texture lines
+    ctx.strokeStyle = '#404040';
+    ctx.lineWidth = 1;
+    for (let i = 1; i < 8; i++) {
+        const ty = y - (h * 0.85 * i / 8);
+        ctx.beginPath();
+        ctx.moveTo(x + 20, ty);
+        ctx.lineTo(x + 30, ty);
+        ctx.stroke();
+    }
+    
+    // Palm fronds (grey leaves)
+    ctx.fillStyle = '#707070';
+    const leafY = y - h;
+    
+    // Left fronds
+    ctx.beginPath();
+    ctx.moveTo(x + 25, leafY + 15);
+    ctx.quadraticCurveTo(x - 10, leafY - 10, x - 20, leafY + 20);
+    ctx.quadraticCurveTo(x, leafY + 5, x + 25, leafY + 15);
+    ctx.fill();
+    
+    ctx.beginPath();
+    ctx.moveTo(x + 25, leafY + 15);
+    ctx.quadraticCurveTo(x - 5, leafY - 25, x - 15, leafY - 5);
+    ctx.quadraticCurveTo(x + 5, leafY, x + 25, leafY + 15);
+    ctx.fill();
+    
+    // Right fronds
+    ctx.beginPath();
+    ctx.moveTo(x + 25, leafY + 15);
+    ctx.quadraticCurveTo(x + 60, leafY - 10, x + 70, leafY + 20);
+    ctx.quadraticCurveTo(x + 50, leafY + 5, x + 25, leafY + 15);
+    ctx.fill();
+    
+    ctx.beginPath();
+    ctx.moveTo(x + 25, leafY + 15);
+    ctx.quadraticCurveTo(x + 55, leafY - 25, x + 65, leafY - 5);
+    ctx.quadraticCurveTo(x + 45, leafY, x + 25, leafY + 15);
+    ctx.fill();
+    
+    // Top frond
+    ctx.beginPath();
+    ctx.moveTo(x + 25, leafY + 15);
+    ctx.quadraticCurveTo(x + 25, leafY - 30, x + 30, leafY - 20);
+    ctx.quadraticCurveTo(x + 25, leafY - 10, x + 25, leafY + 15);
+    ctx.fill();
+}
+
+function drawEmpireState() {
+    if (empireState.currentHeight <= 0) return;
+    
+    const h = empireState.currentHeight;
+    const x = empireState.x;
+    const y = empireState.baseY;
+    
+    // Main building body
+    ctx.fillStyle = '#4a4a4a';
+    ctx.fillRect(x + 10, y - h * 0.65, 40, h * 0.65);
+    
+    // Middle section (narrower)
+    ctx.fillStyle = '#3d3d3d';
+    ctx.fillRect(x + 15, y - h * 0.8, 30, h * 0.15);
+    
+    // Upper section (even narrower)
+    ctx.fillStyle = '#4a4a4a';
+    ctx.fillRect(x + 20, y - h * 0.9, 20, h * 0.1);
+    
+    // Spire
+    ctx.fillStyle = '#5a5a5a';
+    ctx.beginPath();
+    ctx.moveTo(x + 27, y - h * 0.9);
+    ctx.lineTo(x + 30, y - h);
+    ctx.lineTo(x + 33, y - h * 0.9);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Windows (grid pattern)
+    ctx.fillStyle = '#707070';
+    for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 4; col++) {
+            const wx = x + 14 + col * 9;
+            const wy = y - h * 0.6 + row * (h * 0.07);
+            ctx.fillRect(wx, wy, 5, 4);
+        }
+    }
+}
+
+function drawLandmarks() {
+    drawVolcano();
+    drawIceberg();
+    drawPalmTree();
+    drawEmpireState();
+}
+
 function drawFireTrails() {
-    if (!volcanoMode) return;
+    if (currentEra !== 'volcano') return;
     
     fireParticles.forEach(p => {
         const alpha = p.life / p.maxLife;
@@ -532,11 +737,11 @@ function drawFireTrails() {
 }
 
 function drawBackground() {
-    // Draw volcano behind everything if active
-    drawVolcano();
+    // Draw all landmarks behind everything
+    drawLandmarks();
     
-    // Draw clouds (darker in volcano mode)
-    ctx.fillStyle = volcanoMode ? '#b0b0b0' : '#e0e0e0';
+    // Draw clouds
+    ctx.fillStyle = '#e0e0e0';
     clouds.forEach(cloud => {
         ctx.beginPath();
         ctx.arc(cloud.x, cloud.y, 15, 0, Math.PI * 2);
@@ -725,17 +930,13 @@ function updateScore() {
         levelUpAnimation = 120; // 2 seconds of animation
         createBonusText(canvas.width / 2, 80, 'LEVEL ' + currentLevel, '#222');
         updateLevelDisplay();
+        updateEra();
     }
     
     // Check for victory (after completing level 10)
     if (!freePlayMode && score >= WIN_SCORE) {
         victory();
         return;
-    }
-    
-    // Activate volcano mode at score 500
-    if (!volcanoMode && score >= VOLCANO_SCORE) {
-        volcanoMode = true;
     }
     
     // Format score with leading zeros
@@ -757,6 +958,31 @@ function updateLevelDisplay() {
         } else {
             levelEl.textContent = 'LV ' + currentLevel;
         }
+    }
+}
+
+function updateEra() {
+    // Determine era based on current level
+    let newEra = 'normal';
+    if (currentLevel >= 8) {
+        newEra = 'civilization';
+    } else if (currentLevel >= 6) {
+        newEra = 'beach';
+    } else if (currentLevel >= 4) {
+        newEra = 'ice';
+    } else if (currentLevel >= 2) {
+        newEra = 'volcano';
+    }
+    
+    if (newEra !== currentEra) {
+        currentEra = newEra;
+        
+        // Set target heights based on era
+        // Previous era landmarks go down, new one rises
+        volcano.targetHeight = (currentEra === 'volcano') ? volcano.height : 0;
+        iceberg.targetHeight = (currentEra === 'ice') ? iceberg.height : 0;
+        palmTree.targetHeight = (currentEra === 'beach') ? palmTree.height : 0;
+        empireState.targetHeight = (currentEra === 'civilization') ? empireState.height : 0;
     }
 }
 
@@ -907,7 +1133,7 @@ function startGame() {
     frameCount = 0;
     lastCactusSpawn = 0;
     lastAsteroidSpawn = 0;
-    volcanoMode = false;
+    currentEra = 'normal';
     currentLevel = 1;
     freePlayMode = false;
     levelUpAnimation = 0;
@@ -918,10 +1144,19 @@ function startGame() {
     particles.length = 0;
     bonusTexts.length = 0;
     fireParticles.length = 0;
+    passedCacti.clear();
+    
+    // Reset all landmarks
     volcano.eruptionParticles.length = 0;
     volcano.currentHeight = 0;
+    volcano.targetHeight = 0;
     volcano.lavaGlow = 0;
-    passedCacti.clear();
+    iceberg.currentHeight = 0;
+    iceberg.targetHeight = 0;
+    palmTree.currentHeight = 0;
+    palmTree.targetHeight = 0;
+    empireState.currentHeight = 0;
+    empireState.targetHeight = 0;
     
     // Reset player
     player.reset();
