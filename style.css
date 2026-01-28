@@ -352,17 +352,18 @@ body {
     }
     
     body {
-        align-items: flex-start;
-        padding-top: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 10px;
     }
     
     #game-container {
-        width: 100vw;
-        max-width: 100%;
-        border: none;
-        border-radius: 0;
-        transform-origin: top center;
-        transform: scale(1.3);
+        width: 95vw;
+        max-width: 95%;
+        border: 2px solid #535353;
+        border-radius: 4px;
     }
     
     #gameCanvas {
@@ -370,54 +371,85 @@ body {
         height: auto;
     }
     
-    /* Adjust start screen content for scaled view */
+    /* Compact start screen for mobile */
     .start-content h1 {
-        font-size: 24px;
+        font-size: 22px;
+        letter-spacing: 2px;
         margin-bottom: 3px;
     }
     
     .subtitle {
-        font-size: 11px;
-        margin-bottom: 15px;
-    }
-    
-    .controls-info {
-        padding: 12px 18px;
-        margin-bottom: 15px;
-    }
-    
-    .controls-info p {
-        font-size: 12px;
-        margin: 5px 0;
-    }
-    
-    .controls-info .warning {
         font-size: 10px;
-        margin-top: 10px;
-    }
-    
-    /* Adjust game over / pause / victory screens */
-    .game-over-content h1,
-    .pause-content h1 {
-        font-size: 28px;
-    }
-    
-    .victory-content h1 {
-        font-size: 22px;
-    }
-    
-    .victory-subtitle {
-        font-size: 13px;
         margin-bottom: 12px;
     }
     
+    .controls-info {
+        display: none;
+    }
+    
+    .press-start {
+        font-size: 14px;
+    }
+    
+    /* Compact game over / pause / victory screens */
+    .game-over-content h1,
+    .pause-content h1 {
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+    
+    .game-over-content p,
+    .pause-content p {
+        font-size: 14px;
+    }
+    
+    .victory-content h1 {
+        font-size: 20px;
+        margin-bottom: 5px;
+    }
+    
+    .victory-subtitle {
+        font-size: 11px;
+        margin-bottom: 10px;
+    }
+    
     .victory-content p {
-        font-size: 15px;
+        font-size: 14px;
+        margin: 5px 0;
+    }
+    
+    .victory-buttons {
+        margin-top: 10px;
+        gap: 8px;
     }
     
     .victory-buttons .btn-play {
-        padding: 12px 30px;
-        font-size: 14px;
+        padding: 10px 25px;
+        font-size: 13px;
+        min-width: 150px;
+    }
+    
+    /* Smaller UI elements */
+    #ui {
+        top: 5px;
+        left: 10px;
+        right: 40px;
+        font-size: 12px;
+    }
+    
+    #score-row {
+        gap: 10px;
+    }
+    
+    #levelDisplay {
+        font-size: 11px;
+    }
+    
+    .btn-pause {
+        top: 5px;
+        right: 5px;
+        padding: 2px 5px;
+        font-size: 10px;
     }
     
     /* Touch controls container */
@@ -471,25 +503,12 @@ body {
     /* Jump button - bottom left corner */
     .touch-btn-jump {
         left: 20px;
-        bottom: calc(30px + env(safe-area-inset-bottom));
+        bottom: calc(20px + env(safe-area-inset-bottom));
     }
     
     /* Umbrella button - bottom right corner */
     .touch-btn-umbrella {
         right: 20px;
-        bottom: calc(30px + env(safe-area-inset-bottom));
-    }
-}
-
-/* Extra small screens - scale down slightly */
-@media (max-width: 400px) {
-    #game-container {
-        transform: scale(1.2);
-    }
-    
-    .touch-btn {
-        width: 70px;
-        height: 70px;
-        font-size: 30px;
+        bottom: calc(20px + env(safe-area-inset-bottom));
     }
 }
