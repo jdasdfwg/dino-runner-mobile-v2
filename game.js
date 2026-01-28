@@ -18,7 +18,7 @@ const gameContainer = document.getElementById('game-container');
 // ============================================
 // GAME CONSTANTS
 // ============================================
-const GROUND_Y = 250;           // Ground level
+const GROUND_Y = 325;           // Ground level (canvas is 375 tall)
 const GRAVITY = 0.8;            // Gravity strength
 const JUMP_FORCE = -15;         // Jump velocity
 const BASE_SPEED = 5;           // Starting game speed
