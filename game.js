@@ -603,9 +603,8 @@ function checkCollisions() {
         
         // Check if umbrella blocks asteroid
         if (player.isUmbrellaActive && checkCollision(umbrellaHitbox, asteroid)) {
-            // Asteroid blocked! Remove it and add points
+            // Asteroid blocked! Remove it (no points)
             asteroids.splice(i, 1);
-            score += 10;
             createBlockEffect(asteroid.x + asteroid.width / 2, asteroid.y + asteroid.height / 2);
             continue;
         }
