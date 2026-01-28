@@ -695,8 +695,96 @@ function init() {
     // Initialize background
     initBackground();
     
+    // Initialize touch controls if on touch device
+    initTouchControls();
+    
     // Start game loop
     gameLoop();
+}
+
+// ============================================
+// MOBILE TOUCH CONTROLS
+// ============================================
+function initTouchControls() {
+    const btnJump = document.getElementById('btn-jump');
+    const btnUmbrella = document.getElementById('btn-umbrella');
+    const btnStart = document.getElementById('btn-start');
+    const btnRestart = document.getElementById('btn-restart');
+    
+    // START button - tap to start game
+    if (btnStart) {
+        btnStart.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (gameState === 'start') {
+                startGame();
+            }
+        }, { passive: false });
+        
+        btnStart.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (gameState === 'start') {
+                startGame();
+            }
+        });
+    }
+    
+    // RESTART button - tap to restart game
+    if (btnRestart) {
+        btnRestart.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (gameState === 'gameover') {
+                restartGame();
+            }
+        }, { passive: false });
+        
+        btnRestart.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (gameState === 'gameover') {
+                restartGame();
+            }
+        });
+    }
+    
+    if (!btnJump || !btnUmbrella) return;
+    
+    // JUMP button - tap to jump (same as Space/J)
+    btnJump.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        keys.jump = true;
+        
+        // Handle game state transitions (same as keyboard)
+        if (gameState === 'start') {
+            startGame();
+        } else if (gameState === 'gameover') {
+            restartGame();
+        }
+    }, { passive: false });
+    
+    btnJump.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        keys.jump = false;
+    }, { passive: false });
+    
+    btnJump.addEventListener('touchcancel', (e) => {
+        e.preventDefault();
+        keys.jump = false;
+    }, { passive: false });
+    
+    // UMBRELLA button - hold to use (same as holding U)
+    btnUmbrella.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        keys.umbrella = true;
+    }, { passive: false });
+    
+    btnUmbrella.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        keys.umbrella = false;
+    }, { passive: false });
+    
+    btnUmbrella.addEventListener('touchcancel', (e) => {
+        e.preventDefault();
+        keys.umbrella = false;
+    }, { passive: false });
 }
 
 // Start the game

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
     <title>Dino Runner - Umbrella Edition</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -28,15 +28,22 @@
                     <p><strong>U</strong> - Umbrella (block asteroids)</p>
                     <p class="warning">Can't jump while umbrella is up!</p>
                 </div>
-                <p class="press-start">- Press SPACE to Play -</p>
+                <p class="press-start desktop-only">- Press SPACE to Play -</p>
+                <button id="btn-start" class="btn-play mobile-only">TAP TO PLAY</button>
             </div>
         </div>
         <div id="game-over-screen" class="hidden">
             <div class="game-over-content">
                 <h1>GAME OVER</h1>
                 <p>Score: <span id="finalScore">0</span></p>
-                <p class="press-restart">Press SPACE to Restart</p>
+                <p class="press-restart desktop-only">Press SPACE to Restart</p>
+                <button id="btn-restart" class="btn-play mobile-only">TAP TO RESTART</button>
             </div>
+        </div>
+        <!-- Mobile touch controls (shown only on small screens via CSS) -->
+        <div id="touch-controls" class="touch-controls">
+            <button id="btn-jump" class="touch-btn touch-btn-jump" aria-label="Jump">▲</button>
+            <button id="btn-umbrella" class="touch-btn touch-btn-umbrella" aria-label="Umbrella">☂</button>
         </div>
     </div>
     <script src="game.js"></script>
