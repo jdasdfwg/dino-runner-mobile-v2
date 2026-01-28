@@ -519,12 +519,12 @@ function spawnAsteroid() {
     
     let spawnX, spawnY, speedX, speedY;
     
-    // 10% chance: spawn from right side, travel left
+    // 10% chance: spawn from right side, dino runs into them as they fall
     if (Math.random() < 0.1) {
-        spawnX = canvas.width + size;
-        spawnY = 50 + Math.random() * 100; // Spawn in upper portion
-        speedX = -(2 + Math.random() * 2); // Travel left at -2 to -4
-        speedY = (baseFallSpeed * 0.6) + Math.random() * 0.5; // Slower vertical descent
+        spawnX = canvas.width - 50 + Math.random() * 100; // Spawn near right edge
+        spawnY = -size - 20; // Start from top like normal
+        speedX = -(3 + Math.random() * 2); // Travel left at -3 to -5 (towards dino)
+        speedY = baseFallSpeed * 0.8; // Fall slightly slower so dino runs into them
     } else {
         // 90%: spawn above player, fall mostly straight down
         spawnX = player.x + (Math.random() - 0.5) * 60; // -30 to +30 from player center
