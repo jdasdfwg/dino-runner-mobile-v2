@@ -157,7 +157,8 @@ function playStartSound() {
 function toggleMute() {
     isMuted = !isMuted;
     const btn = document.getElementById('btn-mute');
-    btn.textContent = isMuted ? '🔇' : '🔊';
+    btn.textContent = '♪';
+    btn.style.textDecoration = isMuted ? 'line-through' : 'none';
 }
 
 // ============================================
