@@ -467,28 +467,31 @@ function drawVolcano() {
     ctx.closePath();
     ctx.fill();
     
-    // Draw lava crater glow
+    // Draw crater glow (grey/white)
     const gradient = ctx.createRadialGradient(
         volcano.x + volcano.width / 2, volcano.baseY - volcano.height + 5,
         5,
         volcano.x + volcano.width / 2, volcano.baseY - volcano.height + 5,
         25
     );
-    gradient.addColorStop(0, `rgba(255, 100, 0, ${volcano.lavaGlow})`);
-    gradient.addColorStop(0.5, `rgba(255, 50, 0, ${volcano.lavaGlow * 0.5})`);
-    gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
+    gradient.addColorStop(0, `rgba(255, 255, 255, ${volcano.lavaGlow})`);
+    gradient.addColorStop(0.5, `rgba(200, 200, 200, ${volcano.lavaGlow * 0.5})`);
+    gradient.addColorStop(1, 'rgba(150, 150, 150, 0)');
     ctx.fillStyle = gradient;
     ctx.beginPath();
     ctx.arc(volcano.x + volcano.width / 2, volcano.baseY - volcano.height + 5, 25, 0, Math.PI * 2);
     ctx.fill();
     
-    // Draw eruption particles
+    // Draw eruption particles (grey tones)
     volcano.eruptionParticles.forEach(p => {
         const alpha = p.life / p.maxLife;
         if (p.type === 'fire') {
-            ctx.fillStyle = `rgba(255, ${50 + Math.random() * 100}, 0, ${alpha})`;
+            // Light grey "smoke/ash"
+            const grey = 180 + Math.floor(Math.random() * 50);
+            ctx.fillStyle = `rgba(${grey}, ${grey}, ${grey}, ${alpha})`;
         } else {
-            ctx.fillStyle = `rgba(80, 80, 80, ${alpha})`;
+            // Dark grey rocks
+            ctx.fillStyle = `rgba(60, 60, 60, ${alpha})`;
         }
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size * alpha, 0, Math.PI * 2);
@@ -501,9 +504,9 @@ function drawFireTrails() {
     
     fireParticles.forEach(p => {
         const alpha = p.life / p.maxLife;
-        const r = 255;
-        const g = Math.floor(100 + (155 * (1 - alpha))); // Yellow to orange
-        ctx.fillStyle = `rgba(${r}, ${g}, 0, ${alpha * 0.8})`;
+        // Grey smoke trail (lighter when fresh, darker as it fades)
+        const grey = Math.floor(150 + (100 * alpha));
+        ctx.fillStyle = `rgba(${grey}, ${grey}, ${grey}, ${alpha * 0.7})`;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fill();
@@ -515,7 +518,7 @@ function drawBackground() {
     drawVolcano();
     
     // Draw clouds (darker in volcano mode)
-    ctx.fillStyle = volcanoMode ? '#a0a0a0' : '#e0e0e0';
+    ctx.fillStyle = volcanoMode ? '#b0b0b0' : '#e0e0e0';
     clouds.forEach(cloud => {
         ctx.beginPath();
         ctx.arc(cloud.x, cloud.y, 15, 0, Math.PI * 2);
@@ -525,11 +528,11 @@ function drawBackground() {
     });
     
     // Draw ground line
-    ctx.fillStyle = volcanoMode ? '#4a3030' : '#535353';
+    ctx.fillStyle = '#535353';
     ctx.fillRect(0, GROUND_Y, canvas.width, 2);
     
     // Draw ground texture
-    ctx.fillStyle = volcanoMode ? '#8a6060' : '#c0c0c0';
+    ctx.fillStyle = '#c0c0c0';
     groundLines.forEach(line => {
         ctx.fillRect(line.x, GROUND_Y + 5, line.width, 2);
     });
@@ -574,7 +577,7 @@ function checkCollisions() {
                 passedCacti.add(i);
                 const bonus = 25;
                 score += bonus;
-                createBonusText(cactus.x + cactus.width / 2, cactus.y - 20, 'CLOSE! +' + bonus, '#ff6600');
+                createBonusText(cactus.x + cactus.width / 2, cactus.y - 20, 'CLOSE! +' + bonus, '#333');
             }
         }
         
@@ -603,12 +606,12 @@ function checkCollisions() {
             if (distanceToPlayer < 30) {
                 bonus = 50;
                 bonusText = 'PERFECT! +50';
-                bonusColor = '#ff0066';
+                bonusColor = '#222';
                 createBonusText(asteroid.x, asteroid.y, bonusText, bonusColor);
             } else if (distanceToPlayer < 50) {
                 bonus = 25;
                 bonusText = 'NICE! +25';
-                bonusColor = '#0099ff';
+                bonusColor = '#444';
                 createBonusText(asteroid.x, asteroid.y, bonusText, bonusColor);
             }
             
@@ -723,7 +726,7 @@ function updateScore() {
     // Activate volcano mode at score 500
     if (!volcanoMode && score >= VOLCANO_SCORE) {
         volcanoMode = true;
-        createBonusText(canvas.width / 2, canvas.height / 2, '🌋 VOLCANO MODE!', '#ff3300');
+        createBonusText(canvas.width / 2, canvas.height / 2, 'VOLCANO MODE!', '#222');
     }
     
     // Format score with leading zeros
