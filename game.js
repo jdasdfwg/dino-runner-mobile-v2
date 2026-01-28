@@ -54,6 +54,113 @@ let levelUpAnimation = 0; // Timer for level up animation
 const bonusTexts = [];
 
 // ============================================
+// SOUND SYSTEM (Web Audio API)
+// ============================================
+let audioCtx = null;
+let isMuted = false;
+
+function initAudio() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+}
+
+function playTone(frequency, duration, type = 'square', volume = 0.3) {
+    if (isMuted || !audioCtx) return;
+    
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    
+    oscillator.type = type;
+    oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+    
+    gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+    
+    oscillator.start(audioCtx.currentTime);
+    oscillator.stop(audioCtx.currentTime + duration);
+}
+
+// Sound effects
+function playJumpSound() {
+    if (isMuted || !audioCtx) return;
+    playTone(400, 0.1, 'square', 0.2);
+    setTimeout(() => playTone(600, 0.1, 'square', 0.15), 50);
+}
+
+function playUmbrellaOpenSound() {
+    if (isMuted || !audioCtx) return;
+    playTone(300, 0.15, 'sine', 0.2);
+    setTimeout(() => playTone(450, 0.1, 'sine', 0.15), 50);
+}
+
+function playBlockSound() {
+    if (isMuted || !audioCtx) return;
+    playTone(800, 0.05, 'square', 0.25);
+    setTimeout(() => playTone(600, 0.1, 'square', 0.2), 30);
+    setTimeout(() => playTone(400, 0.15, 'square', 0.15), 60);
+}
+
+function playUmbrellaBreakSound() {
+    if (isMuted || !audioCtx) return;
+    playTone(200, 0.1, 'sawtooth', 0.3);
+    setTimeout(() => playTone(150, 0.15, 'sawtooth', 0.25), 50);
+    setTimeout(() => playTone(100, 0.2, 'sawtooth', 0.2), 100);
+}
+
+function playBonusSound() {
+    if (isMuted || !audioCtx) return;
+    playTone(880, 0.08, 'sine', 0.2);
+    setTimeout(() => playTone(1100, 0.1, 'sine', 0.15), 60);
+}
+
+function playLevelUpSound() {
+    if (isMuted || !audioCtx) return;
+    const notes = [523, 659, 784, 1047]; // C5, E5, G5, C6
+    notes.forEach((freq, i) => {
+        setTimeout(() => playTone(freq, 0.15, 'square', 0.2), i * 100);
+    });
+}
+
+function playGameOverSound() {
+    if (isMuted || !audioCtx) return;
+    const notes = [400, 350, 300, 200];
+    notes.forEach((freq, i) => {
+        setTimeout(() => playTone(freq, 0.2, 'square', 0.25), i * 150);
+    });
+}
+
+function playVictorySound() {
+    if (isMuted || !audioCtx) return;
+    const notes = [523, 659, 784, 1047, 1047, 784, 1047]; // Fanfare
+    const durations = [0.15, 0.15, 0.15, 0.3, 0.15, 0.15, 0.4];
+    let time = 0;
+    notes.forEach((freq, i) => {
+        setTimeout(() => playTone(freq, durations[i], 'square', 0.25), time);
+        time += durations[i] * 700;
+    });
+}
+
+function playStartSound() {
+    if (isMuted || !audioCtx) return;
+    playTone(440, 0.1, 'square', 0.2);
+    setTimeout(() => playTone(550, 0.1, 'square', 0.2), 80);
+    setTimeout(() => playTone(660, 0.15, 'square', 0.2), 160);
+}
+
+function toggleMute() {
+    isMuted = !isMuted;
+    const btn = document.getElementById('btn-mute');
+    btn.textContent = isMuted ? '🔇' : '🔊';
+}
+
+// ============================================
 // INPUT STATE
 // ============================================
 const keys = {
@@ -91,6 +198,9 @@ const player = {
         // If umbrella is broken, must release button before using again
         if (keys.umbrella) {
             if (!this.umbrellaBroken) {
+                if (!this.isUmbrellaActive) {
+                    playUmbrellaOpenSound();
+                }
                 this.isUmbrellaActive = true;
             }
         } else {
@@ -103,6 +213,7 @@ const player = {
         if (keys.jump && !this.isJumping && !this.isUmbrellaActive) {
             this.velocityY = JUMP_FORCE;
             this.isJumping = true;
+            playJumpSound();
         }
         
         // Apply gravity
@@ -944,6 +1055,7 @@ function checkCollisions() {
                 passedCacti.add(cactus.id);
                 score += 25;
                 createBonusText(cactus.x + cactus.width / 2, cactus.y - 20, 'CLOSE! +25', '#333');
+                playBonusSound();
             }
         }
         
@@ -962,6 +1074,7 @@ function checkCollisions() {
             // Asteroid blocked! Remove it (no points)
             asteroids.splice(i, 1);
             createBlockEffect(asteroid.x + asteroid.width / 2, asteroid.y + asteroid.height / 2);
+            playBlockSound();
             continue;
         }
         
@@ -974,6 +1087,7 @@ function checkCollisions() {
                 player.isUmbrellaActive = false;
                 createBlockEffect(asteroid.x + asteroid.width / 2, asteroid.y + asteroid.height / 2);
                 createBonusText(player.x + 20, player.y - 60, 'UMBRELLA BREAK!', '#333');
+                playUmbrellaBreakSound();
                 continue;
             }
             return true; // Game over (no umbrella protection)
@@ -1081,6 +1195,7 @@ function updateScore() {
         currentLevel = newLevel;
         levelUpAnimation = 120; // 2 seconds of animation
         createBonusText(canvas.width / 2, 80, 'LEVEL ' + currentLevel, '#222');
+        playLevelUpSound();
         updateLevelDisplay();
         updateEra();
     }
@@ -1291,6 +1406,8 @@ function drawLevelUpAnimation() {
 // GAME STATE MANAGEMENT
 // ============================================
 function startGame() {
+    initAudio();
+    playStartSound();
     gameState = 'playing';
     score = 0;
     gameSpeed = BASE_SPEED;
@@ -1343,6 +1460,7 @@ function startGame() {
 function gameOver() {
     gameState = 'gameover';
     screenShake();
+    playGameOverSound();
     
     // Show game over screen
     finalScoreEl.textContent = score;
@@ -1355,6 +1473,7 @@ function restartGame() {
 
 function victory() {
     gameState = 'victory';
+    playVictorySound();
     
     // Show victory screen
     const victoryScreen = document.getElementById('victory-screen');
@@ -1603,6 +1722,15 @@ function initTouchControls() {
         btnPlayAgain.addEventListener('click', (e) => {
             e.preventDefault();
             startGame();
+        });
+    }
+    
+    // MUTE button
+    const btnMute = document.getElementById('btn-mute');
+    if (btnMute) {
+        btnMute.addEventListener('click', (e) => {
+            e.preventDefault();
+            toggleMute();
         });
     }
 }

@@ -83,6 +83,46 @@ body {
     color: #fff;
 }
 
+/* Key hints */
+.key-hints {
+    position: absolute;
+    top: 32px;
+    left: 20px;
+    font-size: 10px;
+    color: #999;
+    display: flex;
+    gap: 12px;
+}
+
+.key-hints span {
+    background: rgba(255,255,255,0.7);
+    padding: 2px 5px;
+    border-radius: 3px;
+}
+
+/* Mute button */
+.btn-mute {
+    position: absolute;
+    top: 10px;
+    right: 45px;
+    padding: 2px 6px;
+    font-size: 14px;
+    background: transparent;
+    border: 2px solid #535353;
+    border-radius: 4px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    z-index: 5;
+}
+
+.btn-mute:hover {
+    background: #f0f0f0;
+}
+
+.btn-mute:active {
+    background: #ddd;
+}
+
 /* Start Screen */
 #start-screen {
     position: absolute;
@@ -450,6 +490,17 @@ body {
         right: 5px;
         padding: 2px 5px;
         font-size: 10px;
+    }
+    
+    .btn-mute {
+        top: 5px;
+        right: 35px;
+        padding: 1px 4px;
+        font-size: 12px;
+    }
+    
+    .key-hints {
+        display: none !important;
     }
     
     /* Touch controls container */
