@@ -243,23 +243,149 @@ function updateCacti() {
 }
 
 function drawCacti() {
-    ctx.fillStyle = '#535353';
-    
-    cacti.forEach(cactus => {
-        // Main trunk
-        ctx.fillRect(cactus.x, cactus.y, cactus.width, cactus.height);
-        
-        // Arms
-        if (cactus.width > 22) {
-            // Left arm
-            ctx.fillRect(cactus.x - 8, cactus.y + 10, 10, 5);
-            ctx.fillRect(cactus.x - 8, cactus.y + 5, 5, 15);
-            
-            // Right arm
-            ctx.fillRect(cactus.x + cactus.width - 2, cactus.y + 15, 10, 5);
-            ctx.fillRect(cactus.x + cactus.width + 3, cactus.y + 10, 5, 15);
+    cacti.forEach(obstacle => {
+        // Draw different obstacles based on current era
+        if (currentEra === 'ice') {
+            drawSpikyIceberg(obstacle);
+        } else if (currentEra === 'beach') {
+            drawCoconutPile(obstacle);
+        } else if (currentEra === 'civilization') {
+            drawFireHydrant(obstacle);
+        } else {
+            drawCactus(obstacle);
         }
     });
+}
+
+function drawCactus(cactus) {
+    ctx.fillStyle = '#535353';
+    // Main trunk
+    ctx.fillRect(cactus.x, cactus.y, cactus.width, cactus.height);
+    
+    // Arms
+    if (cactus.width > 22) {
+        // Left arm
+        ctx.fillRect(cactus.x - 8, cactus.y + 10, 10, 5);
+        ctx.fillRect(cactus.x - 8, cactus.y + 5, 5, 15);
+        
+        // Right arm
+        ctx.fillRect(cactus.x + cactus.width - 2, cactus.y + 15, 10, 5);
+        ctx.fillRect(cactus.x + cactus.width + 3, cactus.y + 10, 5, 15);
+    }
+}
+
+function drawSpikyIceberg(obstacle) {
+    const x = obstacle.x;
+    const y = obstacle.y;
+    const w = obstacle.width;
+    const h = obstacle.height;
+    
+    // Main iceberg body (light grey/blue-ish)
+    ctx.fillStyle = '#b8c4c8';
+    ctx.beginPath();
+    ctx.moveTo(x, y + h);
+    ctx.lineTo(x + w * 0.2, y + h * 0.3);
+    ctx.lineTo(x + w * 0.4, y + h * 0.5);
+    ctx.lineTo(x + w * 0.5, y);
+    ctx.lineTo(x + w * 0.6, y + h * 0.4);
+    ctx.lineTo(x + w * 0.8, y + h * 0.2);
+    ctx.lineTo(x + w, y + h);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Ice highlights
+    ctx.fillStyle = '#d8e4e8';
+    ctx.beginPath();
+    ctx.moveTo(x + w * 0.5, y);
+    ctx.lineTo(x + w * 0.55, y + h * 0.25);
+    ctx.lineTo(x + w * 0.45, y + h * 0.2);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Dark edges for spiky look
+    ctx.fillStyle = '#8a9498';
+    ctx.beginPath();
+    ctx.moveTo(x + w * 0.8, y + h * 0.2);
+    ctx.lineTo(x + w, y + h);
+    ctx.lineTo(x + w * 0.85, y + h * 0.5);
+    ctx.closePath();
+    ctx.fill();
+}
+
+function drawCoconutPile(obstacle) {
+    const x = obstacle.x;
+    const y = obstacle.y;
+    const w = obstacle.width;
+    const h = obstacle.height;
+    
+    ctx.fillStyle = '#5a4a3a';
+    
+    // Bottom row of coconuts
+    const coconutR = Math.min(w / 3, h / 3);
+    ctx.beginPath();
+    ctx.arc(x + coconutR, y + h - coconutR, coconutR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x + w / 2, y + h - coconutR, coconutR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x + w - coconutR, y + h - coconutR, coconutR, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Top coconut
+    ctx.beginPath();
+    ctx.arc(x + w / 2, y + h - coconutR * 2.5, coconutR * 0.9, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Coconut details (three dots on each)
+    ctx.fillStyle = '#3a2a1a';
+    const dots = [[x + coconutR, y + h - coconutR], [x + w / 2, y + h - coconutR], [x + w - coconutR, y + h - coconutR], [x + w / 2, y + h - coconutR * 2.5]];
+    dots.forEach(([cx, cy]) => {
+        ctx.beginPath();
+        ctx.arc(cx - 3, cy - 2, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(cx + 3, cy - 2, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(cx, cy + 3, 2, 0, Math.PI * 2);
+        ctx.fill();
+    });
+}
+
+function drawFireHydrant(obstacle) {
+    const x = obstacle.x;
+    const y = obstacle.y;
+    const w = obstacle.width;
+    const h = obstacle.height;
+    
+    // Main body (dark grey for monochrome theme)
+    ctx.fillStyle = '#4a4a4a';
+    ctx.fillRect(x + w * 0.2, y + h * 0.3, w * 0.6, h * 0.7);
+    
+    // Top dome
+    ctx.beginPath();
+    ctx.arc(x + w / 2, y + h * 0.3, w * 0.3, Math.PI, 0, false);
+    ctx.fill();
+    
+    // Top cap
+    ctx.fillStyle = '#3a3a3a';
+    ctx.fillRect(x + w * 0.25, y, w * 0.5, h * 0.15);
+    
+    // Side nozzles
+    ctx.fillStyle = '#5a5a5a';
+    ctx.fillRect(x, y + h * 0.4, w * 0.25, h * 0.15);
+    ctx.fillRect(x + w * 0.75, y + h * 0.4, w * 0.25, h * 0.15);
+    
+    // Base
+    ctx.fillStyle = '#3a3a3a';
+    ctx.fillRect(x + w * 0.1, y + h * 0.85, w * 0.8, h * 0.15);
+    
+    // Center bolt
+    ctx.fillStyle = '#6a6a6a';
+    ctx.beginPath();
+    ctx.arc(x + w / 2, y + h * 0.55, w * 0.12, 0, Math.PI * 2);
+    ctx.fill();
 }
 
 // ============================================
