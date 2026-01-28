@@ -58,6 +58,43 @@ body {
     font-weight: normal;
 }
 
+/* Level and Pause row */
+#level-pause-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 5px;
+    gap: 10px;
+}
+
+#levelDisplay {
+    font-size: 14px;
+    color: #535353;
+}
+
+.btn-pause {
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+    color: #535353;
+    background: transparent;
+    border: 2px solid #535353;
+    border-radius: 4px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.btn-pause:hover {
+    background: #535353;
+    color: #fff;
+}
+
+.btn-pause:active {
+    background: #333;
+    color: #fff;
+}
+
 /* Start Screen */
 #start-screen {
     position: absolute;
@@ -185,6 +222,108 @@ body {
 .press-restart {
     margin-top: 20px;
     animation: blink 1s infinite;
+}
+
+/* Pause Screen */
+#pause-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+#pause-screen.hidden {
+    display: none;
+}
+
+.pause-content {
+    text-align: center;
+    color: #535353;
+}
+
+.pause-content h1 {
+    font-size: 36px;
+    margin-bottom: 20px;
+    letter-spacing: 4px;
+}
+
+.pause-content p {
+    font-size: 16px;
+    animation: blink 1s infinite;
+}
+
+/* Victory Screen */
+#victory-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+#victory-screen.hidden {
+    display: none;
+}
+
+.victory-content {
+    text-align: center;
+    color: #535353;
+}
+
+.victory-content h1 {
+    font-size: 28px;
+    margin-bottom: 10px;
+    letter-spacing: 3px;
+}
+
+.victory-subtitle {
+    font-size: 16px;
+    color: #888;
+    margin-bottom: 20px;
+}
+
+.victory-content p {
+    font-size: 18px;
+    margin: 10px 0;
+}
+
+.victory-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+    align-items: center;
+}
+
+.victory-buttons .btn-play {
+    display: inline-block;
+    min-width: 180px;
+}
+
+.btn-secondary {
+    background: transparent;
+    color: #535353;
+    border: 2px solid #535353;
+}
+
+.btn-secondary:hover {
+    background: #f0f0f0;
+}
+
+.btn-secondary:active {
+    background: #535353;
+    color: #fff;
 }
 
 /* Screen shake effect */

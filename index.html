@@ -14,9 +14,14 @@
                 <span>HI <span id="highScore">00000</span></span>
                 <span id="currentScore">00000</span>
             </div>
-            <div id="controls-legend">
+            <div id="level-pause-row">
+                <span id="levelDisplay">LV 1</span>
+                <button id="btn-pause" class="btn-pause" aria-label="Pause">| |</button>
+            </div>
+            <div id="controls-legend" class="desktop-only">
                 <span>SPACE/J: Jump</span>
                 <span>U: Umbrella</span>
+                <span>P: Pause</span>
             </div>
         </div>
         <div id="start-screen">
@@ -38,6 +43,24 @@
                 <p>Score: <span id="finalScore">0</span></p>
                 <p class="press-restart desktop-only">Press SPACE to Restart</p>
                 <button id="btn-restart" class="btn-play mobile-only">TAP TO RESTART</button>
+            </div>
+        </div>
+        <div id="pause-screen" class="hidden">
+            <div class="pause-content">
+                <h1>PAUSED</h1>
+                <p class="desktop-only">Press P or SPACE to Resume</p>
+                <button id="btn-resume" class="btn-play mobile-only">TAP TO RESUME</button>
+            </div>
+        </div>
+        <div id="victory-screen" class="hidden">
+            <div class="victory-content">
+                <h1>YOU DIDN'T GO EXTINCT!</h1>
+                <p class="victory-subtitle">Congratulations, Survivor!</p>
+                <p>Final Score: <span id="victoryScore">0</span></p>
+                <div class="victory-buttons">
+                    <button id="btn-freeplay" class="btn-play">FREE PLAY</button>
+                    <button id="btn-playagain" class="btn-play btn-secondary">PLAY AGAIN</button>
+                </div>
             </div>
         </div>
         <!-- Mobile touch controls (shown only on small screens via CSS) -->

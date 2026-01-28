@@ -28,7 +28,7 @@ const SPEED_INCREMENT = 0.002;  // Speed increase per frame (faster ramp up)
 // ============================================
 // GAME STATE
 // ============================================
-let gameState = 'start'; // 'start', 'playing', 'gameover'
+let gameState = 'start'; // 'start', 'playing', 'paused', 'gameover', 'victory'
 let score = 0;
 let highScore = parseInt(localStorage.getItem('dinoHighScore')) || 0;
 let gameSpeed = BASE_SPEED;
@@ -37,6 +37,14 @@ let frameCount = 0;
 // Volcano/fire mode (activates at score 500)
 let volcanoMode = false;
 const VOLCANO_SCORE = 500;
+
+// Level system
+let currentLevel = 1;
+const POINTS_PER_LEVEL = 250;
+const MAX_LEVEL = 10;
+const WIN_SCORE = (MAX_LEVEL * POINTS_PER_LEVEL) + POINTS_PER_LEVEL; // 2750 points to win
+let freePlayMode = false;
+let levelUpAnimation = 0; // Timer for level up animation
 
 // Bonus text popups
 const bonusTexts = [];
@@ -582,8 +590,8 @@ function checkCollisions() {
             const horizontalOverlap = playerHitbox.x < cactus.x + cactus.width && 
                                       playerHitbox.x + playerHitbox.width > cactus.x;
             
-            // If player is directly above cactus with small clearance (within 15 pixels)
-            if (horizontalOverlap && playerBottom < cactusTop && cactusTop - playerBottom < 15) {
+            // If player is directly above cactus with small clearance (within 25 pixels)
+            if (horizontalOverlap && playerBottom < cactusTop && cactusTop - playerBottom < 25) {
                 passedCacti.add(i);
                 const bonus = 25;
                 score += bonus;
@@ -710,6 +718,21 @@ function drawBonusTexts() {
 function updateScore() {
     score++;
     
+    // Check for level up
+    const newLevel = Math.min(MAX_LEVEL, Math.floor(score / POINTS_PER_LEVEL) + 1);
+    if (newLevel > currentLevel && currentLevel < MAX_LEVEL) {
+        currentLevel = newLevel;
+        levelUpAnimation = 120; // 2 seconds of animation
+        createBonusText(canvas.width / 2, 80, 'LEVEL ' + currentLevel, '#222');
+        updateLevelDisplay();
+    }
+    
+    // Check for victory (after completing level 10)
+    if (!freePlayMode && score >= WIN_SCORE) {
+        victory();
+        return;
+    }
+    
     // Activate volcano mode at score 500
     if (!volcanoMode && score >= VOLCANO_SCORE) {
         volcanoMode = true;
@@ -724,6 +747,17 @@ function updateScore() {
         highScore = score;
         highScoreEl.textContent = highScore.toString().padStart(5, '0');
         localStorage.setItem('dinoHighScore', highScore);
+    }
+}
+
+function updateLevelDisplay() {
+    const levelEl = document.getElementById('levelDisplay');
+    if (levelEl) {
+        if (freePlayMode) {
+            levelEl.textContent = 'FREE PLAY';
+        } else {
+            levelEl.textContent = 'LV ' + currentLevel;
+        }
     }
 }
 
@@ -811,6 +845,11 @@ function gameLoop() {
     if (gameState === 'playing') {
         frameCount++;
         
+        // Update level up animation
+        if (levelUpAnimation > 0) {
+            levelUpAnimation--;
+        }
+        
         // Increase difficulty over time
         gameSpeed = Math.min(MAX_SPEED, BASE_SPEED + frameCount * SPEED_INCREMENT);
         
@@ -842,9 +881,21 @@ function gameLoop() {
     player.draw();
     drawParticles();
     drawBonusTexts();
+    drawLevelUpAnimation();
     
     // Continue game loop
     requestAnimationFrame(gameLoop);
+}
+
+function drawLevelUpAnimation() {
+    if (levelUpAnimation <= 0) return;
+    
+    // Flash effect for level up
+    const alpha = Math.sin(levelUpAnimation * 0.2) * 0.3;
+    if (alpha > 0) {
+        ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
 }
 
 // ============================================
@@ -858,6 +909,9 @@ function startGame() {
     lastCactusSpawn = 0;
     lastAsteroidSpawn = 0;
     volcanoMode = false;
+    currentLevel = 1;
+    freePlayMode = false;
+    levelUpAnimation = 0;
     
     // Clear obstacles
     cacti.length = 0;
@@ -876,10 +930,15 @@ function startGame() {
     // Update UI
     currentScoreEl.textContent = '00000';
     highScoreEl.textContent = highScore.toString().padStart(5, '0');
+    updateLevelDisplay();
     
-    // Hide screens
+    // Hide all screens
     startScreen.style.display = 'none';
     gameOverScreen.classList.add('hidden');
+    const pauseScreen = document.getElementById('pause-screen');
+    if (pauseScreen) pauseScreen.classList.add('hidden');
+    const victoryScreen = document.getElementById('victory-screen');
+    if (victoryScreen) victoryScreen.classList.add('hidden');
 }
 
 function gameOver() {
@@ -893,6 +952,45 @@ function gameOver() {
 
 function restartGame() {
     startGame();
+}
+
+function victory() {
+    gameState = 'victory';
+    
+    // Show victory screen
+    const victoryScreen = document.getElementById('victory-screen');
+    if (victoryScreen) {
+        document.getElementById('victoryScore').textContent = score;
+        victoryScreen.classList.remove('hidden');
+    }
+}
+
+function continueFreePlay() {
+    freePlayMode = true;
+    gameState = 'playing';
+    updateLevelDisplay();
+    
+    // Hide victory screen
+    const victoryScreen = document.getElementById('victory-screen');
+    if (victoryScreen) {
+        victoryScreen.classList.add('hidden');
+    }
+}
+
+function togglePause() {
+    if (gameState === 'playing') {
+        gameState = 'paused';
+        const pauseScreen = document.getElementById('pause-screen');
+        if (pauseScreen) {
+            pauseScreen.classList.remove('hidden');
+        }
+    } else if (gameState === 'paused') {
+        gameState = 'playing';
+        const pauseScreen = document.getElementById('pause-screen');
+        if (pauseScreen) {
+            pauseScreen.classList.add('hidden');
+        }
+    }
 }
 
 // ============================================
@@ -909,12 +1007,21 @@ document.addEventListener('keydown', (e) => {
             startGame();
         } else if (gameState === 'gameover') {
             restartGame();
+        } else if (gameState === 'paused') {
+            togglePause(); // Unpause with space
         }
     }
     
     // Umbrella key: U
     if (e.code === 'KeyU') {
         keys.umbrella = true;
+    }
+    
+    // Pause key: P
+    if (e.code === 'KeyP') {
+        if (gameState === 'playing' || gameState === 'paused') {
+            togglePause();
+        }
     }
 });
 
@@ -1035,6 +1142,70 @@ function initTouchControls() {
         e.preventDefault();
         keys.umbrella = false;
     }, { passive: false });
+    
+    // PAUSE button
+    const btnPause = document.getElementById('btn-pause');
+    if (btnPause) {
+        btnPause.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (gameState === 'playing' || gameState === 'paused') {
+                togglePause();
+            }
+        }, { passive: false });
+        
+        btnPause.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (gameState === 'playing' || gameState === 'paused') {
+                togglePause();
+            }
+        });
+    }
+    
+    // RESUME button (on pause screen)
+    const btnResume = document.getElementById('btn-resume');
+    if (btnResume) {
+        btnResume.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (gameState === 'paused') {
+                togglePause();
+            }
+        }, { passive: false });
+        
+        btnResume.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (gameState === 'paused') {
+                togglePause();
+            }
+        });
+    }
+    
+    // FREE PLAY button (on victory screen)
+    const btnFreePlay = document.getElementById('btn-freeplay');
+    if (btnFreePlay) {
+        btnFreePlay.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            continueFreePlay();
+        }, { passive: false });
+        
+        btnFreePlay.addEventListener('click', (e) => {
+            e.preventDefault();
+            continueFreePlay();
+        });
+    }
+    
+    // PLAY AGAIN button (on victory screen)
+    const btnPlayAgain = document.getElementById('btn-playagain');
+    if (btnPlayAgain) {
+        btnPlayAgain.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            startGame();
+        }, { passive: false });
+        
+        btnPlayAgain.addEventListener('click', (e) => {
+            e.preventDefault();
+            startGame();
+        });
+    }
 }
 
 // Start the game
