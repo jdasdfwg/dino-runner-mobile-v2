@@ -1049,11 +1049,23 @@ function manageSpawns() {
     // Start very easy, ramp up gradually
     const difficultyProgress = Math.min(1, frameCount / 3000); // Takes ~50 seconds to reach max difficulty
     
-    // Min interval: starts at 120, goes down to 40 at max difficulty
-    const minAsteroidInterval = Math.max(40, 120 - difficultyProgress * 80);
+    // Level-based asteroid frequency adjustment
+    // Before level 6, asteroids spawn much less frequently
+    const isBeforeLevel6 = currentLevel < 6;
     
-    // Spawn chance: starts at 0.01 (1%), goes up to 0.08 (8%) at max difficulty  
-    const asteroidChance = 0.01 + difficultyProgress * 0.07;
+    // Min interval: starts at 180, goes down to 60 at max difficulty
+    // Before level 6: add extra 80 frames between spawns
+    let minAsteroidInterval = Math.max(60, 180 - difficultyProgress * 120);
+    if (isBeforeLevel6) {
+        minAsteroidInterval += 80;
+    }
+    
+    // Spawn chance: starts at 0.008 (0.8%), goes up to 0.05 (5%) at max difficulty
+    // Before level 6: halve the spawn chance
+    let asteroidChance = 0.008 + difficultyProgress * 0.042;
+    if (isBeforeLevel6) {
+        asteroidChance *= 0.5;
+    }
     
     const canSpawnAsteroid = 
         frameCount > 600 && // No asteroids for first 10 seconds
