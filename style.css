@@ -37,42 +37,29 @@ body {
 #ui {
     position: absolute;
     top: 10px;
-    right: 20px;
+    left: 20px;
+    right: 50px;
     font-size: 16px;
     color: #535353;
     font-weight: bold;
     letter-spacing: 2px;
 }
 
-#score-display {
+#score-row {
     display: flex;
-    gap: 30px;
-}
-
-#controls-legend {
-    display: flex;
-    gap: 15px;
-    font-size: 11px;
-    color: #888;
-    margin-top: 5px;
-    font-weight: normal;
-}
-
-/* Level and Pause row */
-#level-pause-row {
-    display: flex;
-    justify-content: space-between;
+    gap: 20px;
     align-items: center;
-    margin-top: 5px;
-    gap: 10px;
 }
 
 #levelDisplay {
     font-size: 14px;
-    color: #535353;
+    color: #888;
 }
 
 .btn-pause {
+    position: absolute;
+    top: 10px;
+    right: 10px;
     padding: 4px 8px;
     font-size: 12px;
     font-weight: bold;
@@ -83,6 +70,7 @@ body {
     border-radius: 4px;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
+    z-index: 5;
 }
 
 .btn-pause:hover {
