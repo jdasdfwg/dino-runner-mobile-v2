@@ -802,8 +802,8 @@ function checkCollisions() {
             const horizontalOverlap = playerHitbox.x < cactus.x + cactus.width && 
                                       playerHitbox.x + playerHitbox.width > cactus.x;
             
-            // If player is directly above cactus with small clearance (within 60 pixels)
-            if (horizontalOverlap && playerBottom < cactusTop && cactusTop - playerBottom < 60) {
+            // If player is directly above cactus with small clearance (within 110 pixels)
+            if (horizontalOverlap && playerBottom < cactusTop && cactusTop - playerBottom < 110) {
                 passedCacti.add(i);
                 closeJumpCombo++;
                 const bonus = 25 * closeJumpCombo;
