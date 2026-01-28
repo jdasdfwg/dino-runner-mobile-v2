@@ -72,6 +72,7 @@ const player = {
     velocityY: 0,
     isJumping: false,
     isUmbrellaActive: false,
+    umbrellaBroken: false, // When true, umbrella can't be used until button released
     
     // Umbrella hitbox (above player)
     umbrellaWidth: 60,
@@ -82,14 +83,19 @@ const player = {
         this.velocityY = 0;
         this.isJumping = false;
         this.isUmbrellaActive = false;
+        this.umbrellaBroken = false;
     },
     
     update() {
         // Handle umbrella - can be used anytime (including mid-air)
+        // If umbrella is broken, must release button before using again
         if (keys.umbrella) {
-            this.isUmbrellaActive = true;
+            if (!this.umbrellaBroken) {
+                this.isUmbrellaActive = true;
+            }
         } else {
             this.isUmbrellaActive = false;
+            this.umbrellaBroken = false; // Reset broken state when button released
         }
         
         // Handle jump - can only START a jump when on ground and not using umbrella
@@ -822,7 +828,7 @@ function checkCollisions() {
     for (let i = asteroids.length - 1; i >= 0; i--) {
         const asteroid = asteroids[i];
         
-        // Check if umbrella blocks asteroid
+        // Check if umbrella blocks asteroid (catches it above player)
         if (player.isUmbrellaActive && checkCollision(umbrellaHitbox, asteroid)) {
             // Asteroid blocked! Remove it (no points)
             asteroids.splice(i, 1);
@@ -832,7 +838,16 @@ function checkCollisions() {
         
         // Check if asteroid hits player
         if (checkCollision(playerHitbox, asteroid)) {
-            return true; // Game over
+            // If umbrella is active, it breaks but saves the dino
+            if (player.isUmbrellaActive) {
+                asteroids.splice(i, 1);
+                player.umbrellaBroken = true; // Umbrella breaks
+                player.isUmbrellaActive = false;
+                createBlockEffect(asteroid.x + asteroid.width / 2, asteroid.y + asteroid.height / 2);
+                createBonusText(player.x + 20, player.y - 60, 'UMBRELLA BREAK!', '#333');
+                continue;
+            }
+            return true; // Game over (no umbrella protection)
         }
     }
     
