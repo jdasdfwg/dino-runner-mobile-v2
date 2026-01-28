@@ -519,9 +519,9 @@ function spawnAsteroid() {
     const speedX = (Math.random() - 0.5) * 0.8; // -0.4 to +0.4 (nearly straight)
     
     // Fall speed - slower for first 5 levels, then normal
-    let baseFallSpeed = 3 + difficultyProgress * 2;
+    let baseFallSpeed = 3.5 + difficultyProgress * 2.5;
     if (currentLevel <= 5) {
-        baseFallSpeed = 2 + difficultyProgress * 1; // Slower fall for levels 1-5
+        baseFallSpeed = 2.5 + difficultyProgress * 1.5; // Slower fall for levels 1-5
     }
     const speedY = baseFallSpeed + Math.random() * 1;
     
@@ -1328,7 +1328,7 @@ function manageSpawns() {
     }
     
     const canSpawnAsteroid = 
-        frameCount > 600 && // No asteroids for first 10 seconds
+        score >= 110 && // No asteroids until score reaches 110
         !isCactusInJumpZone() && // No cactus requiring a jump
         !isAsteroidAlreadyThreatening() && // No existing asteroid threat
         frameCount - lastAsteroidSpawn > minAsteroidInterval;
@@ -1540,6 +1540,11 @@ document.addEventListener('keydown', (e) => {
         if (gameState === 'playing' || gameState === 'paused') {
             togglePause();
         }
+    }
+    
+    // Mute key: M
+    if (e.code === 'KeyM') {
+        toggleMute();
     }
 });
 
