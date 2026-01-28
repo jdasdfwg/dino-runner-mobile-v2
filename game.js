@@ -508,23 +508,30 @@ const asteroids = [];
 function spawnAsteroid() {
     const size = 25 + Math.random() * 15;
     
-    // Spawn more directly above the player so umbrella can block
-    // Centered on player with small random offset
-    const spawnX = player.x + (Math.random() - 0.5) * 60; // -30 to +30 from player center
-    const spawnY = -size - 20;
-    
     // Difficulty progression
     const difficultyProgress = Math.min(1, frameCount / 3000);
-    
-    // Very slight horizontal drift - mostly straight down so umbrella works
-    const speedX = (Math.random() - 0.5) * 0.8; // -0.4 to +0.4 (nearly straight)
     
     // Fall speed - slower for first 5 levels, then normal
     let baseFallSpeed = 3.5 + difficultyProgress * 2.5;
     if (currentLevel <= 5) {
         baseFallSpeed = 2.5 + difficultyProgress * 1.5; // Slower fall for levels 1-5
     }
-    const speedY = baseFallSpeed + Math.random() * 1;
+    
+    let spawnX, spawnY, speedX, speedY;
+    
+    // 10% chance: spawn from right side, travel left
+    if (Math.random() < 0.1) {
+        spawnX = canvas.width + size;
+        spawnY = 50 + Math.random() * 100; // Spawn in upper portion
+        speedX = -(2 + Math.random() * 2); // Travel left at -2 to -4
+        speedY = (baseFallSpeed * 0.6) + Math.random() * 0.5; // Slower vertical descent
+    } else {
+        // 90%: spawn above player, fall mostly straight down
+        spawnX = player.x + (Math.random() - 0.5) * 60; // -30 to +30 from player center
+        spawnY = -size - 20;
+        speedX = (Math.random() - 0.5) * 0.8; // -0.4 to +0.4 (nearly straight)
+        speedY = baseFallSpeed + Math.random() * 1;
+    }
     
     // Pre-generate asteroid shape (so it doesn't flicker)
     const shapeVariance = [];
