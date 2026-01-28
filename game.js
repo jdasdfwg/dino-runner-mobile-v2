@@ -407,8 +407,11 @@ function spawnAsteroid() {
     // Very slight horizontal drift - mostly straight down so umbrella works
     const speedX = (Math.random() - 0.5) * 0.8; // -0.4 to +0.4 (nearly straight)
     
-    // Fall speed - starts slow, gets faster
-    const baseFallSpeed = 3 + difficultyProgress * 2;
+    // Fall speed - slower for first 5 levels, then normal
+    let baseFallSpeed = 3 + difficultyProgress * 2;
+    if (currentLevel <= 5) {
+        baseFallSpeed = 2 + difficultyProgress * 1; // Slower fall for levels 1-5
+    }
     const speedY = baseFallSpeed + Math.random() * 1;
     
     // Pre-generate asteroid shape (so it doesn't flicker)
