@@ -760,8 +760,15 @@ function isAsteroidAlreadyThreatening() {
 }
 
 function manageSpawns() {
+    // Early game (first 20 seconds / 1200 frames) - easier spawning
+    const isEarlyGame = frameCount < 1200;
+    
     // Spawn cacti - interval decreases as speed increases
-    const cactusInterval = Math.max(50, 140 - gameSpeed * 6);
+    // In early game, add extra spacing between cacti
+    let cactusInterval = Math.max(50, 140 - gameSpeed * 6);
+    if (isEarlyGame) {
+        cactusInterval += 40; // Extra spacing in first 20 seconds
+    }
     if (frameCount - lastCactusSpawn > cactusInterval + Math.random() * 80) {
         spawnCactus();
         lastCactusSpawn = frameCount;
@@ -783,7 +790,7 @@ function manageSpawns() {
     const asteroidChance = 0.01 + difficultyProgress * 0.07;
     
     const canSpawnAsteroid = 
-        frameCount > 180 && // Longer grace period at start (~3 seconds)
+        frameCount > 1200 && // No asteroids for first 20 seconds
         !isCactusInJumpZone() && // No cactus requiring a jump
         !isAsteroidAlreadyThreatening() && // No existing asteroid threat
         frameCount - lastAsteroidSpawn > minAsteroidInterval;
