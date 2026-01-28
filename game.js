@@ -280,8 +280,8 @@ function drawSpikyIceberg(obstacle) {
     const w = obstacle.width;
     const h = obstacle.height;
     
-    // Main iceberg body (light grey/blue-ish)
-    ctx.fillStyle = '#b8c4c8';
+    // Main iceberg body (darker grey)
+    ctx.fillStyle = '#5a6a70';
     ctx.beginPath();
     ctx.moveTo(x, y + h);
     ctx.lineTo(x + w * 0.2, y + h * 0.3);
@@ -293,8 +293,8 @@ function drawSpikyIceberg(obstacle) {
     ctx.closePath();
     ctx.fill();
     
-    // Ice highlights
-    ctx.fillStyle = '#d8e4e8';
+    // Ice highlights (medium grey)
+    ctx.fillStyle = '#7a8a90';
     ctx.beginPath();
     ctx.moveTo(x + w * 0.5, y);
     ctx.lineTo(x + w * 0.55, y + h * 0.25);
@@ -303,7 +303,7 @@ function drawSpikyIceberg(obstacle) {
     ctx.fill();
     
     // Dark edges for spiky look
-    ctx.fillStyle = '#8a9498';
+    ctx.fillStyle = '#3a4a50';
     ctx.beginPath();
     ctx.moveTo(x + w * 0.8, y + h * 0.2);
     ctx.lineTo(x + w, y + h);
