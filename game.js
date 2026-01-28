@@ -341,6 +341,7 @@ const volcano = {
     baseY: GROUND_Y,
     width: 80,
     height: 100,
+    currentHeight: 0,  // Starts at 0, rises to full height
     eruptionParticles: [],
     lavaGlow: 0
 };
@@ -393,14 +394,21 @@ function updateBackground() {
 }
 
 function updateVolcano() {
-    // Animate lava glow
-    volcano.lavaGlow = 0.5 + Math.sin(frameCount * 0.1) * 0.3;
+    // Slowly rise the volcano from the ground
+    if (volcano.currentHeight < volcano.height) {
+        volcano.currentHeight += 0.5; // Rise speed
+    }
     
-    // Spawn eruption particles randomly
-    if (Math.random() < 0.15) {
+    // Animate lava glow (only when fully risen)
+    if (volcano.currentHeight >= volcano.height * 0.8) {
+        volcano.lavaGlow = 0.5 + Math.sin(frameCount * 0.1) * 0.3;
+    }
+    
+    // Spawn eruption particles only when volcano is mostly risen
+    if (volcano.currentHeight >= volcano.height * 0.9 && Math.random() < 0.15) {
         volcano.eruptionParticles.push({
             x: volcano.x + volcano.width / 2 + (Math.random() - 0.5) * 20,
-            y: volcano.baseY - volcano.height,
+            y: volcano.baseY - volcano.currentHeight,
             vx: (Math.random() - 0.5) * 3,
             vy: -3 - Math.random() * 4,
             life: 40 + Math.random() * 30,
@@ -455,32 +463,34 @@ function updateFireParticles() {
 }
 
 function drawVolcano() {
-    if (!volcanoMode) return;
+    if (!volcanoMode || volcano.currentHeight <= 0) return;
     
-    // Draw volcano mountain
+    // Draw volcano mountain (using currentHeight for rising animation)
     ctx.fillStyle = '#3d3d3d';
     ctx.beginPath();
     ctx.moveTo(volcano.x, volcano.baseY);
-    ctx.lineTo(volcano.x + volcano.width / 2 - 15, volcano.baseY - volcano.height);
-    ctx.lineTo(volcano.x + volcano.width / 2 + 15, volcano.baseY - volcano.height);
+    ctx.lineTo(volcano.x + volcano.width / 2 - 15, volcano.baseY - volcano.currentHeight);
+    ctx.lineTo(volcano.x + volcano.width / 2 + 15, volcano.baseY - volcano.currentHeight);
     ctx.lineTo(volcano.x + volcano.width, volcano.baseY);
     ctx.closePath();
     ctx.fill();
     
-    // Draw crater glow (grey/white)
-    const gradient = ctx.createRadialGradient(
-        volcano.x + volcano.width / 2, volcano.baseY - volcano.height + 5,
-        5,
-        volcano.x + volcano.width / 2, volcano.baseY - volcano.height + 5,
-        25
-    );
-    gradient.addColorStop(0, `rgba(255, 255, 255, ${volcano.lavaGlow})`);
-    gradient.addColorStop(0.5, `rgba(200, 200, 200, ${volcano.lavaGlow * 0.5})`);
-    gradient.addColorStop(1, 'rgba(150, 150, 150, 0)');
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(volcano.x + volcano.width / 2, volcano.baseY - volcano.height + 5, 25, 0, Math.PI * 2);
-    ctx.fill();
+    // Draw crater glow only when mostly risen (grey/white)
+    if (volcano.currentHeight >= volcano.height * 0.8) {
+        const gradient = ctx.createRadialGradient(
+            volcano.x + volcano.width / 2, volcano.baseY - volcano.currentHeight + 5,
+            5,
+            volcano.x + volcano.width / 2, volcano.baseY - volcano.currentHeight + 5,
+            25
+        );
+        gradient.addColorStop(0, `rgba(255, 255, 255, ${volcano.lavaGlow})`);
+        gradient.addColorStop(0.5, `rgba(200, 200, 200, ${volcano.lavaGlow * 0.5})`);
+        gradient.addColorStop(1, 'rgba(150, 150, 150, 0)');
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(volcano.x + volcano.width / 2, volcano.baseY - volcano.currentHeight + 5, 25, 0, Math.PI * 2);
+        ctx.fill();
+    }
     
     // Draw eruption particles (grey tones)
     volcano.eruptionParticles.forEach(p => {
@@ -593,31 +603,9 @@ function checkCollisions() {
         
         // Check if umbrella blocks asteroid
         if (player.isUmbrellaActive && checkCollision(umbrellaHitbox, asteroid)) {
-            // Calculate how close the asteroid was to the player for perfect timing bonus
-            const asteroidCenterY = asteroid.y + asteroid.height / 2;
-            const playerTop = playerHitbox.y;
-            const distanceToPlayer = playerTop - asteroidCenterY;
-            
-            // Perfect timing: asteroid was very close to hitting player (within 30 pixels)
-            let bonus = 10;
-            let bonusText = '+10';
-            let bonusColor = '#535353';
-            
-            if (distanceToPlayer < 30) {
-                bonus = 50;
-                bonusText = 'PERFECT! +50';
-                bonusColor = '#222';
-                createBonusText(asteroid.x, asteroid.y, bonusText, bonusColor);
-            } else if (distanceToPlayer < 50) {
-                bonus = 25;
-                bonusText = 'NICE! +25';
-                bonusColor = '#444';
-                createBonusText(asteroid.x, asteroid.y, bonusText, bonusColor);
-            }
-            
             // Asteroid blocked! Remove it and add points
             asteroids.splice(i, 1);
-            score += bonus;
+            score += 10;
             createBlockEffect(asteroid.x + asteroid.width / 2, asteroid.y + asteroid.height / 2);
             continue;
         }
@@ -872,6 +860,8 @@ function startGame() {
     bonusTexts.length = 0;
     fireParticles.length = 0;
     volcano.eruptionParticles.length = 0;
+    volcano.currentHeight = 0;
+    volcano.lavaGlow = 0;
     passedCacti.clear();
     
     // Reset player
