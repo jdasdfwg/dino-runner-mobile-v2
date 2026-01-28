@@ -205,6 +205,8 @@ const player = {
 // ============================================
 const cacti = [];
 
+let cactusIdCounter = 0;
+
 function spawnCactus() {
     const types = [
         { width: 20, height: 40 },  // Small
@@ -215,6 +217,7 @@ function spawnCactus() {
     const type = types[Math.floor(Math.random() * types.length)];
     
     cacti.push({
+        id: cactusIdCounter++,
         x: canvas.width + 50,
         y: GROUND_Y - type.height,
         width: type.width,
@@ -796,7 +799,7 @@ function checkCollisions() {
         
         // Check for near miss bonus (player just cleared the cactus)
         // Player must be jumping, cactus must be passing under, and very close clearance
-        if (player.isJumping && !passedCacti.has(i)) {
+        if (player.isJumping && !passedCacti.has(cactus.id)) {
             const playerBottom = playerHitbox.y + playerHitbox.height;
             const cactusTop = cactus.y;
             const horizontalOverlap = playerHitbox.x < cactus.x + cactus.width && 
@@ -804,7 +807,7 @@ function checkCollisions() {
             
             // If player is directly above cactus with small clearance (within 110 pixels)
             if (horizontalOverlap && playerBottom < cactusTop && cactusTop - playerBottom < 110) {
-                passedCacti.add(i);
+                passedCacti.add(cactus.id);
                 closeJumpCombo++;
                 const bonus = 25 * closeJumpCombo;
                 score += bonus;
@@ -812,14 +815,14 @@ function checkCollisions() {
                 createBonusText(cactus.x + cactus.width / 2, cactus.y - 20, comboText, '#333');
             } else if (horizontalOverlap && playerBottom < cactusTop) {
                 // Player jumped over but not close enough - reset combo
-                passedCacti.add(i);
+                passedCacti.add(cactus.id);
                 closeJumpCombo = 0;
             }
         }
         
         // Clean up passed cacti tracking when cactus goes off screen
         if (cactus.x + cactus.width < 0) {
-            passedCacti.delete(i);
+            passedCacti.delete(cactus.id);
         }
     }
     
@@ -1159,6 +1162,7 @@ function startGame() {
     fireParticles.length = 0;
     passedCacti.clear();
     closeJumpCombo = 0;
+    cactusIdCounter = 0;
     
     // Reset all landmarks
     volcano.eruptionParticles.length = 0;
