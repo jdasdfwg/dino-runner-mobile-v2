@@ -1807,6 +1807,11 @@ function togglePause() {
 // INPUT HANDLING
 // ============================================
 document.addEventListener('keydown', (e) => {
+    // Ignore key presses when typing in an input field
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        return;
+    }
+    
     // Jump keys: Space or J
     if (e.code === 'Space' || e.code === 'KeyJ') {
         e.preventDefault();
