@@ -359,6 +359,157 @@ body {
     color: #fff;
 }
 
+/* ============================================
+   LEADERBOARD STYLES
+   ============================================ */
+
+.rank-display {
+    font-size: 14px;
+    color: #888;
+    margin: 5px 0 15px 0;
+}
+
+.name-entry {
+    margin: 15px 0;
+}
+
+.name-entry p {
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.name-input-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.name-input {
+    width: 100px;
+    padding: 10px;
+    font-size: 24px;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 8px;
+    color: #535353;
+    background: #fff;
+    border: 3px solid #535353;
+    border-radius: 8px;
+    outline: none;
+}
+
+.name-input:focus {
+    border-color: #333;
+    box-shadow: 0 0 0 2px rgba(83, 83, 83, 0.2);
+}
+
+.name-input::placeholder {
+    color: #ccc;
+}
+
+.btn-submit {
+    min-width: 160px;
+}
+
+.leaderboard {
+    margin-top: 15px;
+}
+
+.leaderboard-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.tab-btn {
+    padding: 8px 16px;
+    font-size: 12px;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    color: #888;
+    background: transparent;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tab-btn:hover {
+    border-color: #888;
+    color: #535353;
+}
+
+.tab-btn.active {
+    background: #535353;
+    color: #fff;
+    border-color: #535353;
+}
+
+.leaderboard-list {
+    background: #f5f5f5;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 15px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.leaderboard-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    font-size: 14px;
+    font-family: 'Courier New', monospace;
+    border-bottom: 1px solid #ddd;
+}
+
+.leaderboard-entry:last-child {
+    border-bottom: none;
+}
+
+.leaderboard-entry.highlight {
+    background: #e8e8e8;
+    font-weight: bold;
+    border-radius: 4px;
+}
+
+.leaderboard-rank {
+    width: 30px;
+    text-align: left;
+    color: #888;
+}
+
+.leaderboard-name {
+    flex: 1;
+    text-align: left;
+    margin-left: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.leaderboard-score {
+    text-align: right;
+    font-weight: bold;
+}
+
+.loading {
+    text-align: center;
+    color: #888;
+    padding: 20px;
+}
+
+.no-scores {
+    text-align: center;
+    color: #888;
+    padding: 20px;
+    font-style: italic;
+}
+
 /* Screen shake effect */
 .shake {
     animation: shake 0.3s;

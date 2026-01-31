@@ -16,6 +16,289 @@ const finalScoreEl = document.getElementById('finalScore');
 const gameContainer = document.getElementById('game-container');
 
 // ============================================
+// FIREBASE LEADERBOARD
+// ============================================
+const firebaseConfig = {
+    apiKey: "AIzaSyAzLOElssndIfehCs8X10Az61aO9SBl9Ak",
+    authDomain: "dino-runner-leaderboard.firebaseapp.com",
+    projectId: "dino-runner-leaderboard",
+    storageBucket: "dino-runner-leaderboard.firebasestorage.app",
+    messagingSenderId: "1042204481478",
+    appId: "1:1042204481478:web:815bfdd337f19c9134c4c7",
+    measurementId: "G-V1R7S29F5H"
+};
+
+// Initialize Firebase
+let db = null;
+try {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+} catch (e) {
+    console.log('Firebase initialization error:', e);
+}
+
+// Get today's date string for daily leaderboard
+function getTodayString() {
+    const today = new Date();
+    return today.toISOString().split('T')[0]; // YYYY-MM-DD
+}
+
+// Submit score to leaderboard
+async function submitScore(playerName, playerScore, isVictory = false) {
+    if (!db) return null;
+    
+    const scoreData = {
+        name: playerName.toUpperCase().substring(0, 3),
+        score: playerScore,
+        date: getTodayString(),
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        victory: isVictory
+    };
+    
+    try {
+        const docRef = await db.collection('scores').add(scoreData);
+        return docRef.id;
+    } catch (e) {
+        console.error('Error submitting score:', e);
+        return null;
+    }
+}
+
+// Get leaderboard (today or all-time)
+async function getLeaderboard(type = 'today', limit = 10) {
+    if (!db) return [];
+    
+    try {
+        let query = db.collection('scores').orderBy('score', 'desc').limit(limit);
+        
+        if (type === 'today') {
+            query = db.collection('scores')
+                .where('date', '==', getTodayString())
+                .orderBy('score', 'desc')
+                .limit(limit);
+        }
+        
+        const snapshot = await query.get();
+        const scores = [];
+        snapshot.forEach(doc => {
+            scores.push({ id: doc.id, ...doc.data() });
+        });
+        return scores;
+    } catch (e) {
+        console.error('Error getting leaderboard:', e);
+        return [];
+    }
+}
+
+// Get player's rank
+async function getPlayerRank(playerScore, type = 'today') {
+    if (!db) return null;
+    
+    try {
+        let query = db.collection('scores').where('score', '>', playerScore);
+        
+        if (type === 'today') {
+            query = db.collection('scores')
+                .where('date', '==', getTodayString())
+                .where('score', '>', playerScore);
+        }
+        
+        const snapshot = await query.get();
+        return snapshot.size + 1;
+    } catch (e) {
+        console.error('Error getting rank:', e);
+        return null;
+    }
+}
+
+// Display leaderboard in UI
+async function displayLeaderboard(containerId, type = 'today', playerScore = null, playerName = null) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    container.innerHTML = '<div class="loading">Loading...</div>';
+    
+    const scores = await getLeaderboard(type, 10);
+    
+    if (scores.length === 0) {
+        container.innerHTML = '<div class="no-scores">No scores yet. Be the first!</div>';
+        return;
+    }
+    
+    let html = '';
+    scores.forEach((entry, index) => {
+        const isPlayer = playerName && entry.name === playerName.toUpperCase() && entry.score === playerScore;
+        html += `
+            <div class="leaderboard-entry ${isPlayer ? 'highlight' : ''}">
+                <span class="leaderboard-rank">${index + 1}.</span>
+                <span class="leaderboard-name">${entry.name}</span>
+                <span class="leaderboard-score">${entry.score.toString().padStart(5, '0')}</span>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+// Initialize leaderboard UI event listeners
+function initLeaderboard() {
+    // Game Over screen
+    const nameInput = document.getElementById('name-input');
+    const submitBtn = document.getElementById('btn-submit-score');
+    const nameEntry = document.getElementById('name-entry');
+    const leaderboard = document.getElementById('leaderboard');
+    const tabToday = document.getElementById('tab-today');
+    const tabAlltime = document.getElementById('tab-alltime');
+    
+    // Victory screen
+    const victoryNameInput = document.getElementById('victory-name-input');
+    const victorySubmitBtn = document.getElementById('btn-victory-submit');
+    const victoryNameEntry = document.getElementById('victory-name-entry');
+    const victoryLeaderboard = document.getElementById('victory-leaderboard');
+    const victoryTabToday = document.getElementById('victory-tab-today');
+    const victoryTabAlltime = document.getElementById('victory-tab-alltime');
+    
+    // Load saved name
+    const savedName = localStorage.getItem('dinoPlayerName') || '';
+    if (nameInput) nameInput.value = savedName;
+    if (victoryNameInput) victoryNameInput.value = savedName;
+    
+    // Submit score handler (game over)
+    if (submitBtn) {
+        submitBtn.addEventListener('click', async () => {
+            const name = nameInput.value.trim() || 'AAA';
+            localStorage.setItem('dinoPlayerName', name);
+            
+            submitBtn.textContent = 'SUBMITTING...';
+            submitBtn.disabled = true;
+            
+            await submitScore(name, score, false);
+            
+            nameEntry.classList.add('hidden');
+            leaderboard.classList.remove('hidden');
+            
+            await displayLeaderboard('leaderboard-list', 'today', score, name);
+            
+            // Show rank
+            const todayRank = await getPlayerRank(score, 'today');
+            const rankDisplay = document.getElementById('rank-display');
+            if (rankDisplay && todayRank) {
+                rankDisplay.textContent = `Today's Rank: #${todayRank}`;
+            }
+        });
+    }
+    
+    // Submit score handler (victory)
+    if (victorySubmitBtn) {
+        victorySubmitBtn.addEventListener('click', async () => {
+            const name = victoryNameInput.value.trim() || 'AAA';
+            localStorage.setItem('dinoPlayerName', name);
+            
+            victorySubmitBtn.textContent = 'SUBMITTING...';
+            victorySubmitBtn.disabled = true;
+            
+            await submitScore(name, score, true);
+            
+            victoryNameEntry.classList.add('hidden');
+            victoryLeaderboard.classList.remove('hidden');
+            
+            await displayLeaderboard('victory-leaderboard-list', 'today', score, name);
+            
+            // Show rank
+            const todayRank = await getPlayerRank(score, 'today');
+            const rankDisplay = document.getElementById('victory-rank-display');
+            if (rankDisplay && todayRank) {
+                rankDisplay.textContent = `Today's Rank: #${todayRank}`;
+            }
+        });
+    }
+    
+    // Tab handlers (game over)
+    if (tabToday) {
+        tabToday.addEventListener('click', () => {
+            tabToday.classList.add('active');
+            tabAlltime.classList.remove('active');
+            displayLeaderboard('leaderboard-list', 'today', score, nameInput.value);
+        });
+    }
+    
+    if (tabAlltime) {
+        tabAlltime.addEventListener('click', () => {
+            tabAlltime.classList.add('active');
+            tabToday.classList.remove('active');
+            displayLeaderboard('leaderboard-list', 'alltime', score, nameInput.value);
+        });
+    }
+    
+    // Tab handlers (victory)
+    if (victoryTabToday) {
+        victoryTabToday.addEventListener('click', () => {
+            victoryTabToday.classList.add('active');
+            victoryTabAlltime.classList.remove('active');
+            displayLeaderboard('victory-leaderboard-list', 'today', score, victoryNameInput.value);
+        });
+    }
+    
+    if (victoryTabAlltime) {
+        victoryTabAlltime.addEventListener('click', () => {
+            victoryTabAlltime.classList.add('active');
+            victoryTabToday.classList.remove('active');
+            displayLeaderboard('victory-leaderboard-list', 'alltime', score, victoryNameInput.value);
+        });
+    }
+    
+    // Auto-uppercase name inputs
+    if (nameInput) {
+        nameInput.addEventListener('input', (e) => {
+            e.target.value = e.target.value.toUpperCase().replace(/[^A-Z]/g, '');
+        });
+    }
+    if (victoryNameInput) {
+        victoryNameInput.addEventListener('input', (e) => {
+            e.target.value = e.target.value.toUpperCase().replace(/[^A-Z]/g, '');
+        });
+    }
+}
+
+// Reset leaderboard UI for new game
+function resetLeaderboardUI() {
+    const nameEntry = document.getElementById('name-entry');
+    const leaderboard = document.getElementById('leaderboard');
+    const submitBtn = document.getElementById('btn-submit-score');
+    const rankDisplay = document.getElementById('rank-display');
+    
+    const victoryNameEntry = document.getElementById('victory-name-entry');
+    const victoryLeaderboard = document.getElementById('victory-leaderboard');
+    const victorySubmitBtn = document.getElementById('btn-victory-submit');
+    const victoryRankDisplay = document.getElementById('victory-rank-display');
+    
+    if (nameEntry) nameEntry.classList.remove('hidden');
+    if (leaderboard) leaderboard.classList.add('hidden');
+    if (submitBtn) {
+        submitBtn.textContent = 'SUBMIT SCORE';
+        submitBtn.disabled = false;
+    }
+    if (rankDisplay) rankDisplay.textContent = '';
+    
+    if (victoryNameEntry) victoryNameEntry.classList.remove('hidden');
+    if (victoryLeaderboard) victoryLeaderboard.classList.add('hidden');
+    if (victorySubmitBtn) {
+        victorySubmitBtn.textContent = 'SUBMIT SCORE';
+        victorySubmitBtn.disabled = false;
+    }
+    if (victoryRankDisplay) victoryRankDisplay.textContent = '';
+    
+    // Reset tabs
+    document.querySelectorAll('.tab-btn').forEach(tab => {
+        if (tab.id.includes('today')) {
+            tab.classList.add('active');
+        } else {
+            tab.classList.remove('active');
+        }
+    });
+}
+
+// ============================================
 // GAME CONSTANTS
 // ============================================
 const GROUND_Y = 325;           // Ground level (canvas is 375 tall)
@@ -1416,6 +1699,7 @@ function drawLevelUpAnimation() {
 function startGame() {
     initAudio();
     playStartSound();
+    resetLeaderboardUI();
     gameState = 'playing';
     score = 0;
     gameSpeed = BASE_SPEED;
@@ -1585,6 +1869,9 @@ function init() {
     
     // Initialize touch controls if on touch device
     initTouchControls();
+    
+    // Initialize leaderboard
+    initLeaderboard();
     
     // Start game loop
     gameLoop();
