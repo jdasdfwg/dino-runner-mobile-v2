@@ -1661,7 +1661,13 @@ function initTouchControls() {
     // UMBRELLA button - hold to use (same as holding U)
     btnUmbrella.addEventListener('touchstart', (e) => {
         e.preventDefault();
+        e.stopPropagation();
+        initAudio(); // Ensure audio is ready
         keys.umbrella = true;
+        // Immediately activate umbrella if playing (more responsive on mobile)
+        if (gameState === 'playing' && !player.umbrellaBroken) {
+            player.isUmbrellaActive = true;
+        }
     }, { passive: false });
     
     btnUmbrella.addEventListener('touchend', (e) => {
