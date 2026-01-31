@@ -45,25 +45,34 @@
                 <p>Score: <span id="finalScore">0</span></p>
                 <p id="rank-display" class="rank-display"></p>
                 
-                <!-- Name Entry -->
-                <div id="name-entry" class="name-entry">
-                    <p>Enter your initials:</p>
-                    <div class="name-input-container">
-                        <input type="text" id="name-input" class="name-input" maxlength="3" placeholder="AAA" autocomplete="off" autocapitalize="characters">
+                <div class="game-over-layout">
+                    <!-- Left side: Name Entry & Buttons -->
+                    <div class="game-over-left">
+                        <div id="name-entry" class="name-entry">
+                            <p>Enter your initials:</p>
+                            <div class="name-input-container">
+                                <input type="text" id="name-input" class="name-input" maxlength="3" placeholder="AAA" autocomplete="off" autocapitalize="characters">
+                            </div>
+                            <button id="btn-submit-score" class="btn-play btn-submit">SUBMIT</button>
+                        </div>
+                        <div class="game-over-buttons">
+                            <button id="btn-restart" class="btn-play">PLAY AGAIN</button>
+                            <p class="skip-hint desktop-only">Press SPACE to play again</p>
+                        </div>
                     </div>
-                    <button id="btn-submit-score" class="btn-play btn-submit">SUBMIT SCORE</button>
-                </div>
-                
-                <!-- Leaderboard -->
-                <div id="leaderboard" class="leaderboard hidden">
-                    <div class="leaderboard-tabs">
-                        <button id="tab-today" class="tab-btn active">TODAY</button>
-                        <button id="tab-alltime" class="tab-btn">ALL TIME</button>
+                    
+                    <!-- Right side: Leaderboard -->
+                    <div class="game-over-right">
+                        <div id="leaderboard" class="leaderboard">
+                            <div class="leaderboard-tabs">
+                                <button id="tab-today" class="tab-btn active">TODAY</button>
+                                <button id="tab-alltime" class="tab-btn">ALL TIME</button>
+                            </div>
+                            <div id="leaderboard-list" class="leaderboard-list">
+                                <div class="loading">Loading...</div>
+                            </div>
+                        </div>
                     </div>
-                    <div id="leaderboard-list" class="leaderboard-list">
-                        <div class="loading">Loading...</div>
-                    </div>
-                    <button id="btn-restart" class="btn-play">PLAY AGAIN</button>
                 </div>
             </div>
         </div>
@@ -81,27 +90,33 @@
                 <p>Final Score: <span id="victoryScore">0</span></p>
                 <p id="victory-rank-display" class="rank-display"></p>
                 
-                <!-- Victory Name Entry -->
-                <div id="victory-name-entry" class="name-entry">
-                    <p>Enter your initials:</p>
-                    <div class="name-input-container">
-                        <input type="text" id="victory-name-input" class="name-input" maxlength="3" placeholder="AAA" autocomplete="off" autocapitalize="characters">
+                <div class="game-over-layout">
+                    <!-- Left side: Name Entry & Buttons -->
+                    <div class="game-over-left">
+                        <div id="victory-name-entry" class="name-entry">
+                            <p>Enter your initials:</p>
+                            <div class="name-input-container">
+                                <input type="text" id="victory-name-input" class="name-input" maxlength="3" placeholder="AAA" autocomplete="off" autocapitalize="characters">
+                            </div>
+                            <button id="btn-victory-submit" class="btn-play btn-submit">SUBMIT</button>
+                        </div>
+                        <div class="victory-buttons">
+                            <button id="btn-freeplay" class="btn-play">FREE PLAY</button>
+                            <button id="btn-playagain" class="btn-play btn-secondary">PLAY AGAIN</button>
+                        </div>
                     </div>
-                    <button id="btn-victory-submit" class="btn-play btn-submit">SUBMIT SCORE</button>
-                </div>
-                
-                <!-- Victory Leaderboard -->
-                <div id="victory-leaderboard" class="leaderboard hidden">
-                    <div class="leaderboard-tabs">
-                        <button id="victory-tab-today" class="tab-btn active">TODAY</button>
-                        <button id="victory-tab-alltime" class="tab-btn">ALL TIME</button>
-                    </div>
-                    <div id="victory-leaderboard-list" class="leaderboard-list">
-                        <div class="loading">Loading...</div>
-                    </div>
-                    <div class="victory-buttons">
-                        <button id="btn-freeplay" class="btn-play">FREE PLAY</button>
-                        <button id="btn-playagain" class="btn-play btn-secondary">PLAY AGAIN</button>
+                    
+                    <!-- Right side: Leaderboard -->
+                    <div class="game-over-right">
+                        <div id="victory-leaderboard" class="leaderboard">
+                            <div class="leaderboard-tabs">
+                                <button id="victory-tab-today" class="tab-btn active">TODAY</button>
+                                <button id="victory-tab-alltime" class="tab-btn">ALL TIME</button>
+                            </div>
+                            <div id="victory-leaderboard-list" class="leaderboard-list">
+                                <div class="loading">Loading...</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

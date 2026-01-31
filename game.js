@@ -169,21 +169,26 @@ function initLeaderboard() {
             const name = nameInput.value.trim() || 'AAA';
             localStorage.setItem('dinoPlayerName', name);
             
-            submitBtn.textContent = 'SUBMITTING...';
+            submitBtn.textContent = '...';
             submitBtn.disabled = true;
+            nameInput.disabled = true;
             
-            await submitScore(name, score, false);
-            
-            nameEntry.classList.add('hidden');
-            leaderboard.classList.remove('hidden');
-            
-            await displayLeaderboard('leaderboard-list', 'today', score, name);
-            
-            // Show rank
-            const todayRank = await getPlayerRank(score, 'today');
-            const rankDisplay = document.getElementById('rank-display');
-            if (rankDisplay && todayRank) {
-                rankDisplay.textContent = `Today's Rank: #${todayRank}`;
+            try {
+                await submitScore(name, score, false);
+                submitBtn.textContent = 'DONE!';
+                
+                // Refresh leaderboard to show new score
+                await displayLeaderboard('leaderboard-list', 'today', score, name);
+                
+                // Update rank
+                const todayRank = await getPlayerRank(score, 'today');
+                const rankDisplay = document.getElementById('rank-display');
+                if (rankDisplay && todayRank) {
+                    rankDisplay.textContent = `Your rank: #${todayRank} today`;
+                }
+            } catch (e) {
+                console.error('Submit error:', e);
+                submitBtn.textContent = 'ERROR';
             }
         });
     }
@@ -194,21 +199,26 @@ function initLeaderboard() {
             const name = victoryNameInput.value.trim() || 'AAA';
             localStorage.setItem('dinoPlayerName', name);
             
-            victorySubmitBtn.textContent = 'SUBMITTING...';
+            victorySubmitBtn.textContent = '...';
             victorySubmitBtn.disabled = true;
+            victoryNameInput.disabled = true;
             
-            await submitScore(name, score, true);
-            
-            victoryNameEntry.classList.add('hidden');
-            victoryLeaderboard.classList.remove('hidden');
-            
-            await displayLeaderboard('victory-leaderboard-list', 'today', score, name);
-            
-            // Show rank
-            const todayRank = await getPlayerRank(score, 'today');
-            const rankDisplay = document.getElementById('victory-rank-display');
-            if (rankDisplay && todayRank) {
-                rankDisplay.textContent = `Today's Rank: #${todayRank}`;
+            try {
+                await submitScore(name, score, true);
+                victorySubmitBtn.textContent = 'DONE!';
+                
+                // Refresh leaderboard to show new score
+                await displayLeaderboard('victory-leaderboard-list', 'today', score, name);
+                
+                // Update rank
+                const todayRank = await getPlayerRank(score, 'today');
+                const rankDisplay = document.getElementById('victory-rank-display');
+                if (rankDisplay && todayRank) {
+                    rankDisplay.textContent = `Your rank: #${todayRank} today`;
+                }
+            } catch (e) {
+                console.error('Submit error:', e);
+                victorySubmitBtn.textContent = 'ERROR';
             }
         });
     }
@@ -262,28 +272,26 @@ function initLeaderboard() {
 
 // Reset leaderboard UI for new game
 function resetLeaderboardUI() {
-    const nameEntry = document.getElementById('name-entry');
-    const leaderboard = document.getElementById('leaderboard');
+    const nameInput = document.getElementById('name-input');
     const submitBtn = document.getElementById('btn-submit-score');
     const rankDisplay = document.getElementById('rank-display');
     
-    const victoryNameEntry = document.getElementById('victory-name-entry');
-    const victoryLeaderboard = document.getElementById('victory-leaderboard');
+    const victoryNameInput = document.getElementById('victory-name-input');
     const victorySubmitBtn = document.getElementById('btn-victory-submit');
     const victoryRankDisplay = document.getElementById('victory-rank-display');
     
-    if (nameEntry) nameEntry.classList.remove('hidden');
-    if (leaderboard) leaderboard.classList.add('hidden');
+    // Reset game over inputs
+    if (nameInput) nameInput.disabled = false;
     if (submitBtn) {
-        submitBtn.textContent = 'SUBMIT SCORE';
+        submitBtn.textContent = 'SUBMIT';
         submitBtn.disabled = false;
     }
     if (rankDisplay) rankDisplay.textContent = '';
     
-    if (victoryNameEntry) victoryNameEntry.classList.remove('hidden');
-    if (victoryLeaderboard) victoryLeaderboard.classList.add('hidden');
+    // Reset victory inputs
+    if (victoryNameInput) victoryNameInput.disabled = false;
     if (victorySubmitBtn) {
-        victorySubmitBtn.textContent = 'SUBMIT SCORE';
+        victorySubmitBtn.textContent = 'SUBMIT';
         victorySubmitBtn.disabled = false;
     }
     if (victoryRankDisplay) victoryRankDisplay.textContent = '';
@@ -1757,6 +1765,17 @@ function gameOver() {
     // Show game over screen
     finalScoreEl.textContent = score;
     gameOverScreen.classList.remove('hidden');
+    
+    // Load leaderboard immediately
+    displayLeaderboard('leaderboard-list', 'today');
+    
+    // Show estimated rank
+    getPlayerRank(score, 'today').then(rank => {
+        const rankDisplay = document.getElementById('rank-display');
+        if (rankDisplay && rank) {
+            rankDisplay.textContent = `Your rank: #${rank} today`;
+        }
+    });
 }
 
 function restartGame() {
@@ -1773,6 +1792,17 @@ function victory() {
         document.getElementById('victoryScore').textContent = score;
         victoryScreen.classList.remove('hidden');
     }
+    
+    // Load leaderboard immediately
+    displayLeaderboard('victory-leaderboard-list', 'today');
+    
+    // Show estimated rank
+    getPlayerRank(score, 'today').then(rank => {
+        const rankDisplay = document.getElementById('victory-rank-display');
+        if (rankDisplay && rank) {
+            rankDisplay.textContent = `Your rank: #${rank} today`;
+        }
+    });
 }
 
 function continueFreePlay() {
