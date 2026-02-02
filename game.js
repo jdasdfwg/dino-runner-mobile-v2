@@ -69,21 +69,25 @@ async function getLeaderboard(type = 'today', limit = 10) {
     if (!db) return [];
     
     try {
-        let query = db.collection('scores').orderBy('score', 'desc').limit(limit);
+        // Get all scores sorted by score (works without index)
+        const snapshot = await db.collection('scores')
+            .orderBy('score', 'desc')
+            .limit(100) // Get more to filter
+            .get();
         
-        if (type === 'today') {
-            query = db.collection('scores')
-                .where('date', '==', getTodayString())
-                .orderBy('score', 'desc')
-                .limit(limit);
-        }
-        
-        const snapshot = await query.get();
-        const scores = [];
+        let scores = [];
         snapshot.forEach(doc => {
             scores.push({ id: doc.id, ...doc.data() });
         });
-        return scores;
+        
+        // Filter for today if needed
+        if (type === 'today') {
+            const today = getTodayString();
+            scores = scores.filter(s => s.date === today);
+        }
+        
+        // Return top entries
+        return scores.slice(0, limit);
     } catch (e) {
         console.error('Error getting leaderboard:', e);
         return [];
@@ -95,16 +99,23 @@ async function getPlayerRank(playerScore, type = 'today') {
     if (!db) return null;
     
     try {
-        let query = db.collection('scores').where('score', '>', playerScore);
+        // Get all scores and count how many are higher
+        const snapshot = await db.collection('scores')
+            .where('score', '>', playerScore)
+            .get();
         
+        let higherScores = [];
+        snapshot.forEach(doc => {
+            higherScores.push({ id: doc.id, ...doc.data() });
+        });
+        
+        // Filter for today if needed
         if (type === 'today') {
-            query = db.collection('scores')
-                .where('date', '==', getTodayString())
-                .where('score', '>', playerScore);
+            const today = getTodayString();
+            higherScores = higherScores.filter(s => s.date === today);
         }
         
-        const snapshot = await query.get();
-        return snapshot.size + 1;
+        return higherScores.length + 1;
     } catch (e) {
         console.error('Error getting rank:', e);
         return null;
