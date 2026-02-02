@@ -777,7 +777,7 @@ body {
     
     .game-over-content,
     .victory-content {
-        padding: 2px 8px 5px 8px;
+        padding: 2px 8px 12px 8px;
     }
     
     .game-over-content h1,
@@ -817,7 +817,8 @@ body {
     }
     
     .game-over-buttons {
-        margin-top: 5px;
+        margin-top: 3px;
+        margin-bottom: 8px;
         flex-direction: column;
         gap: 3px;
     }
