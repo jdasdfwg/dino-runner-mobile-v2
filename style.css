@@ -242,14 +242,14 @@ body {
 }
 
 .game-over-content h1 {
-    font-size: 36px;
-    margin-bottom: 20px;
+    font-size: 28px;
+    margin-bottom: 8px;
     letter-spacing: 4px;
 }
 
 .game-over-content p {
-    font-size: 18px;
-    margin: 10px 0;
+    font-size: 16px;
+    margin: 5px 0;
 }
 
 .press-restart {
@@ -366,39 +366,39 @@ body {
    ============================================ */
 
 .rank-display {
-    font-size: 14px;
+    font-size: 13px;
     color: #888;
-    margin: 5px 0 15px 0;
+    margin: 3px 0 8px 0;
 }
 
 .name-entry {
-    margin: 15px 0;
+    margin: 8px 0;
 }
 
 .name-entry p {
-    font-size: 14px;
-    margin-bottom: 10px;
+    font-size: 12px;
+    margin-bottom: 6px;
 }
 
 .name-input-container {
     display: flex;
     justify-content: center;
-    margin-bottom: 15px;
+    margin-bottom: 8px;
 }
 
 .name-input {
-    width: 100px;
-    padding: 10px;
-    font-size: 24px;
+    width: 90px;
+    padding: 8px;
+    font-size: 20px;
     font-family: 'Courier New', monospace;
     font-weight: bold;
     text-align: center;
     text-transform: uppercase;
-    letter-spacing: 8px;
+    letter-spacing: 6px;
     color: #535353;
     background: #fff;
-    border: 3px solid #535353;
-    border-radius: 8px;
+    border: 2px solid #535353;
+    border-radius: 6px;
     outline: none;
 }
 
@@ -418,8 +418,8 @@ body {
 /* Game Over Layout - Side by Side */
 .game-over-layout {
     display: flex;
-    gap: 30px;
-    margin-top: 15px;
+    gap: 25px;
+    margin-top: 10px;
     align-items: flex-start;
     justify-content: center;
 }
@@ -428,30 +428,30 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-width: 160px;
+    min-width: 140px;
 }
 
 .game-over-right {
-    min-width: 220px;
+    min-width: 200px;
 }
 
 .game-over-buttons {
-    margin-top: 10px;
+    margin-top: 8px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
 }
 
 .game-over-buttons .btn-play {
-    padding: 10px 20px;
-    font-size: 14px;
+    padding: 8px 16px;
+    font-size: 13px;
 }
 
 .skip-hint {
-    font-size: 11px;
-    color: #999;
-    margin-top: 5px;
+    font-size: 10px;
+    color: #aaa;
+    margin-top: 3px;
 }
 
 .leaderboard {
@@ -461,13 +461,13 @@ body {
 .leaderboard-tabs {
     display: flex;
     justify-content: center;
-    gap: 5px;
-    margin-bottom: 10px;
+    gap: 4px;
+    margin-bottom: 6px;
 }
 
 .tab-btn {
-    padding: 8px 16px;
-    font-size: 12px;
+    padding: 5px 12px;
+    font-size: 11px;
     font-family: 'Courier New', monospace;
     font-weight: bold;
     color: #888;
@@ -492,10 +492,10 @@ body {
 .leaderboard-list {
     background: #f5f5f5;
     border: 2px solid #ddd;
-    border-radius: 8px;
-    padding: 10px;
-    margin-bottom: 15px;
-    max-height: 200px;
+    border-radius: 6px;
+    padding: 6px;
+    margin-bottom: 0;
+    max-height: 140px;
     overflow-y: auto;
 }
 
@@ -503,8 +503,8 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 6px 10px;
-    font-size: 14px;
+    padding: 4px 8px;
+    font-size: 13px;
     font-family: 'Courier New', monospace;
     border-bottom: 1px solid #ddd;
 }
