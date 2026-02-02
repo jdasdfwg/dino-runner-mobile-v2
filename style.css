@@ -771,18 +771,18 @@ body {
     #game-over-screen,
     #victory-screen {
         align-items: flex-start;
-        padding-top: 5px;
+        padding-top: 8px;
         overflow-y: auto;
     }
     
     .game-over-content,
     .victory-content {
-        padding: 3px 8px 10px 8px;
+        padding: 5px 10px 8px 10px;
     }
     
     .game-over-content h1,
     .victory-content h1 {
-        font-size: 14px;
+        font-size: 16px;
         margin-bottom: 2px;
         letter-spacing: 2px;
     }
@@ -794,31 +794,32 @@ body {
     }
     
     .rank-display {
-        font-size: 9px;
-        margin: 1px 0 3px 0;
+        font-size: 10px;
+        margin: 2px 0 5px 0;
     }
     
-    /* Stack layout vertically on mobile */
+    /* Keep side-by-side layout on mobile like desktop */
     .game-over-layout {
-        flex-direction: column;
-        gap: 5px;
+        flex-direction: row;
+        gap: 15px;
         margin-top: 5px;
+        align-items: flex-start;
     }
     
     .game-over-left {
-        min-width: auto;
-        width: 100%;
+        min-width: 100px;
+        flex: 1;
     }
     
     .game-over-right {
-        min-width: auto;
-        width: 100%;
+        min-width: 130px;
+        flex: 1;
     }
     
     .game-over-buttons {
-        margin-top: 5px;
-        flex-direction: row;
-        gap: 6px;
+        margin-top: 8px;
+        flex-direction: column;
+        gap: 5px;
     }
     
     .skip-hint {
@@ -830,26 +831,26 @@ body {
     }
     
     .name-entry p {
-        font-size: 9px;
-        margin-bottom: 3px;
-    }
-    
-    .name-input-container {
+        font-size: 10px;
         margin-bottom: 4px;
     }
     
+    .name-input-container {
+        margin-bottom: 5px;
+    }
+    
     .name-input {
-        width: 60px;
-        padding: 4px;
+        width: 65px;
+        padding: 5px;
         font-size: 14px;
-        letter-spacing: 3px;
+        letter-spacing: 4px;
         border-width: 2px;
         border-radius: 4px;
     }
     
     .btn-submit {
-        min-width: 70px;
-        padding: 5px 10px;
+        min-width: 75px;
+        padding: 6px 12px;
         font-size: 10px;
     }
     
@@ -858,33 +859,33 @@ body {
     }
     
     .leaderboard-tabs {
-        gap: 2px;
-        margin-bottom: 3px;
+        gap: 3px;
+        margin-bottom: 4px;
     }
     
     .tab-btn {
-        padding: 3px 6px;
-        font-size: 8px;
+        padding: 4px 8px;
+        font-size: 9px;
     }
     
     .leaderboard-list {
-        padding: 3px;
+        padding: 4px;
         margin-bottom: 0;
-        max-height: 70px;
+        max-height: 90px;
         border-radius: 4px;
     }
     
     .leaderboard-entry {
-        padding: 2px 4px;
-        font-size: 9px;
+        padding: 3px 5px;
+        font-size: 10px;
     }
     
     .leaderboard-rank {
-        width: 15px;
+        width: 16px;
     }
     
     .leaderboard-name {
-        margin-left: 3px;
+        margin-left: 4px;
         letter-spacing: 1px;
     }
     
@@ -897,9 +898,9 @@ body {
     /* Make buttons smaller on mobile */
     .game-over-buttons .btn-play,
     .victory-buttons .btn-play {
-        padding: 5px 10px;
+        padding: 6px 12px;
         font-size: 10px;
-        min-width: 80px;
+        min-width: 75px;
     }
     
     .victory-subtitle {
