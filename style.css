@@ -339,9 +339,11 @@ body {
     align-items: center;
 }
 
-.victory-buttons .btn-play {
+.victory-buttons .btn-play,
+.game-over-buttons .btn-play,
+.name-entry .btn-play {
     display: inline-block;
-    min-width: 180px;
+    min-width: 120px;
 }
 
 .btn-secondary {
