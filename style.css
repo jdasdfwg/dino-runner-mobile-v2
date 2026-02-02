@@ -771,13 +771,14 @@ body {
     #game-over-screen,
     #victory-screen {
         align-items: center;
-        padding-top: 3px;
+        padding-top: 12px;
+        padding-bottom: 12px;
         overflow: hidden;
     }
     
     .game-over-content,
     .victory-content {
-        padding: 2px 8px 12px 8px;
+        padding: 8px 8px 8px 8px;
     }
     
     .game-over-content h1,
@@ -817,10 +818,10 @@ body {
     }
     
     .game-over-buttons {
-        margin-top: 3px;
-        margin-bottom: 8px;
+        margin-top: 2px;
+        margin-bottom: 0;
         flex-direction: column;
-        gap: 3px;
+        gap: 2px;
     }
     
     .skip-hint {
@@ -853,6 +854,7 @@ body {
         min-width: 60px;
         padding: 4px 8px;
         font-size: 9px;
+        margin-bottom: 2px;
     }
     
     .leaderboard {
