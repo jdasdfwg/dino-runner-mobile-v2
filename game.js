@@ -1861,10 +1861,15 @@ document.addEventListener('keydown', (e) => {
         // Handle game state transitions
         if (gameState === 'start') {
             startGame();
-        } else if (gameState === 'gameover') {
-            restartGame();
         } else if (gameState === 'paused') {
             togglePause(); // Unpause with space
+        }
+    }
+    
+    // Y key to play again from game over
+    if (e.code === 'KeyY') {
+        if (gameState === 'gameover') {
+            restartGame();
         }
     }
     
