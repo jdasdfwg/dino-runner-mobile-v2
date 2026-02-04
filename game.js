@@ -37,10 +37,15 @@ try {
     console.log('Firebase initialization error:', e);
 }
 
-// Get today's date string for daily leaderboard
+// Get today's date string for daily leaderboard (PST timezone)
 function getTodayString() {
-    const today = new Date();
-    return today.toISOString().split('T')[0]; // YYYY-MM-DD
+    const now = new Date();
+    // Convert to PST/PDT (America/Los_Angeles)
+    const pstDate = new Date(now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+    const year = pstDate.getFullYear();
+    const month = String(pstDate.getMonth() + 1).padStart(2, '0');
+    const day = String(pstDate.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`; // YYYY-MM-DD in PST
 }
 
 // Submit score to leaderboard
